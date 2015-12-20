@@ -27,22 +27,19 @@
 
 using namespace std;
 
-void getNetworkInfo();
-void findActiveNetworkReg();
-void setNewMac();
-void revertToOriginalMac();
+void getNetworkInfo();//Locate the active "Wi-Fi" adapter
+void setNewMac(); //Set the "Wi-Fi" adapter's new mac address
+void revertToOriginalMac(); //change the mac Address back to the original
 void setQueryKey();
 void QueryKey(HKEY);
-void queryRegValue(string);
+void queryRegValue(string); //Find the subkey where the where the active "Wi-Fi" is located
 
 int main(){
 
 	//setQueryKey();
 	//getNetworkInfo();
-	setNewMac();
+	//setNewMac();
 	//revertToOriginalMac();
-
-	//system("netsh wlan connect name=DG1670AD2");
 
 	cout << endl;
 	system("pause");
@@ -97,7 +94,8 @@ void revertToOriginalMac(){
 	retval = RegCloseKey(hKey);
 
 
-	system("get-netadapter ""Wi-Fi"" | restart-netadapter");
+	system("netsh interface set interface ""Wi-Fi"" DISABLED");
+	system("netsh interface set interface ""Wi-Fi"" ENABLED");
 	//system("netsh wlan connect name=DG1670AD2");
 
 }
@@ -183,10 +181,9 @@ void getNetworkInfo(){
 			//check to see if network adapter is "Wi-fi"
 			printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
 			networkAdap = pCurrAddresses->FriendlyName;
-			if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){
-				cout << "Success" << endl;
+			if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){ //87 == "Wi-Fi"
+				printf("\t***Success******8:  Friendly name == %wS\n", pCurrAddresses->FriendlyName);
 				driverDesc = pCurrAddresses->AdapterName;
-				cout << *networkAdap << endl;
 			}
 			pCurrAddresses = pCurrAddresses->Next;
 		}
@@ -226,6 +223,7 @@ void setQueryKey(){
 	LPCSTR dir = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}");
 	LONG checkReg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &hTestKey);
 	cout << checkReg;
+
 	if (checkReg == ERROR_SUCCESS)
 	{
 		QueryKey(hTestKey);
@@ -233,6 +231,8 @@ void setQueryKey(){
 	RegCloseKey(hTestKey);
 
 }
+
+
 void QueryKey(HKEY hKey)
 {
 	
@@ -275,7 +275,7 @@ void QueryKey(HKEY hKey)
 	{
 		printf("\nNumber of subkeys: %d\n", cSubKeys);
 
-		for (i = 0; i<cSubKeys; i++)
+		for (i = 0; i < cSubKeys; i++)
 		{
 			cbName = MAX_KEY_LENGTH;
 			retCode = RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, &ftLastWriteTime);
@@ -289,34 +289,9 @@ void QueryKey(HKEY hKey)
 			};
 		}
 	}
-
-	// Enumerate the key values. 
-
-	if (cValues)
-	{
-		printf("\nNumber of values: %d\n", cValues);
-
-		for (i = 0, retCode = ERROR_SUCCESS; i<cValues; i++)
-		{
-			cchValue = MAX_VALUE_NAME;
-			achValue[0] = '\0';
-			retCode = RegEnumValue(hKey, i,
-				achValue,
-				&cchValue,
-				NULL,
-				NULL,
-				NULL,
-				NULL);
-
-			if (retCode == ERROR_SUCCESS)
-			{
-				_tprintf(TEXT("(%d) %s\n"), i + 1, achValue);
-			}
-		}
-	}
 }
 
-
+//Find the subkey where the where the active "Wi-Fi" is located
 void queryRegValue(string subKey){
 
 	//set up our variables and buffers.
@@ -324,10 +299,14 @@ void queryRegValue(string subKey){
 	unsigned char szVersion[1024];
 	DWORD dwDataSize;
 	memset(szVersion, 0, 32);
+	string key = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subKey;
+
+	//Convert string to windows data type
+	LPCTSTR findKey = key.c_str();
 
 	// open the key for reading.
 	HKEY hkeyDXVer;
-	long lResult = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\",
+	long lResult = RegOpenKeyEx(HKEY_LOCAL_MACHINE, findKey,
 		0, KEY_READ, &hkeyDXVer);
 
 	if (ERROR_SUCCESS == lResult)
@@ -337,12 +316,8 @@ void queryRegValue(string subKey){
 		lResult = RegQueryValueEx(hkeyDXVer, "NetCfgInstanceId", 0, &dwType, (unsigned char*)&szVersion, &dwDataSize);
 		if (ERROR_SUCCESS == lResult)
 		{
-			std::cout << "NetCfgInstanceId = " << szVersion << std::endl;
+			cout << "NetCfgInstanceId = " << szVersion <<endl;
 		}
 	}
 
 }
-
-
-
-
