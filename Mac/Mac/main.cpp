@@ -27,16 +27,16 @@
 
 using namespace std;
 
-void getNetworkInfo();//Locate the active "Wi-Fi" adapter
+LPCSTR getNetworkInfo();//Locate the active "Wi-Fi" adapter
 void setNewMac(); //Set the "Wi-Fi" adapter's new mac address
 void revertToOriginalMac(); //change the mac Address back to the original
-void setQueryKey();
+void setQueryKey(); //Locates the subkey which holds the active "Wi-Fi" adapter
 void QueryKey(HKEY);
 void queryRegValue(string); //Find the subkey where the where the active "Wi-Fi" is located
 
 int main(){
 
-	//setQueryKey();
+	setQueryKey();
 	//getNetworkInfo();
 	//setNewMac();
 	//revertToOriginalMac();
@@ -76,6 +76,7 @@ void setNewMac(){
 
 
 }
+
 //Delete the regkey "NetworkAddress" from the registry
 void revertToOriginalMac(){
 
@@ -101,7 +102,7 @@ void revertToOriginalMac(){
 }
 
 //Access the network Information (operStatus, friendlyname, adaptername)
-void getNetworkInfo(){
+LPCSTR getNetworkInfo(){
 	
 	
 	/* Declare and initialize variables */
@@ -131,6 +132,8 @@ void getNetworkInfo(){
 	// Allocate a 15 KB buffer to start with.
 	outBufLen = WORKING_BUFFER_SIZE;
 
+	//Name of the active Wi-Fi adapter
+	LPCSTR adapName = NULL;
 	do {
 
 		pAddresses = (IP_ADAPTER_ADDRESSES *)MALLOC(outBufLen);
@@ -161,6 +164,7 @@ void getNetworkInfo(){
 
 		//Cycles through the Network Adapters, ouputs name, type and operational status
 		while (pCurrAddresses) {
+			/*
 			printf("\tAdapter name: %s\n", pCurrAddresses->AdapterName);
 			printf("\tDescription: %wS\n", pCurrAddresses->Description);
 			printf("\tFriendly name: %wS\n", pCurrAddresses->FriendlyName);
@@ -177,13 +181,16 @@ void getNetworkInfo(){
 						(int)pCurrAddresses->PhysicalAddress[i]);
 				}
 			}
-
+			*/
 			//check to see if network adapter is "Wi-fi"
-			printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
+			//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
 			networkAdap = pCurrAddresses->FriendlyName;
 			if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){ //87 == "Wi-Fi"
-				printf("\t***Success******8:  Friendly name == %wS\n", pCurrAddresses->FriendlyName);
+				//printf("\t***Success******8:  Friendly name == %wS\n", pCurrAddresses->FriendlyName);
+				//cout << pCurrAddresses->AdapterName << endl;
 				driverDesc = pCurrAddresses->AdapterName;
+				adapName = pCurrAddresses->AdapterName;
+				return adapName;
 			}
 			pCurrAddresses = pCurrAddresses->Next;
 		}
@@ -213,7 +220,7 @@ void getNetworkInfo(){
 	if (pAddresses) {
 		FREE(pAddresses);
 	}
-
+	return 0;
 
 }
 
@@ -222,7 +229,7 @@ void setQueryKey(){
 	HKEY hTestKey;
 	LPCSTR dir = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}");
 	LONG checkReg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &hTestKey);
-	cout << checkReg;
+	//cout << checkReg;
 
 	if (checkReg == ERROR_SUCCESS)
 	{
@@ -273,7 +280,7 @@ void QueryKey(HKEY hKey)
 
 	if (cSubKeys)
 	{
-		printf("\nNumber of subkeys: %d\n", cSubKeys);
+		//printf("\nNumber of subkeys: %d\n", cSubKeys);
 
 		for (i = 0; i < cSubKeys; i++)
 		{
@@ -283,7 +290,7 @@ void QueryKey(HKEY hKey)
 
 			if (retCode == ERROR_SUCCESS)
 			{
-				_tprintf(TEXT("(%d) %s\n"), i + 1, achKey);
+				//_tprintf(TEXT("(%d) %s\n"), i + 1, achKey);
 				subkey = achKey;
 				queryRegValue(subkey);
 			};
@@ -316,7 +323,12 @@ void queryRegValue(string subKey){
 		lResult = RegQueryValueEx(hkeyDXVer, "NetCfgInstanceId", 0, &dwType, (unsigned char*)&szVersion, &dwDataSize);
 		if (ERROR_SUCCESS == lResult)
 		{
-			cout << "NetCfgInstanceId = " << szVersion <<endl;
+			LPCSTR comp = getNetworkInfo();
+			string test = comp;
+			string sadf (reinterpret_cast<char *>(szVersion));
+
+			if (test == sadf)
+				cout << "NetCfgInstanceId = " << szVersion <<endl;
 		}
 	}
 
