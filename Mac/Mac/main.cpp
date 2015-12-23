@@ -30,15 +30,14 @@ using namespace std;
 LPCSTR getNetworkInfo();//Locate the active "Wi-Fi" adapter
 void setNewMac(); //Set the "Wi-Fi" adapter's new mac address
 void revertToOriginalMac(); //change the mac Address back to the original
-void setQueryKey(); //Locates the subkey which holds the active "Wi-Fi" adapter
-void QueryKey(HKEY);
-void queryRegValue(string); //Find the subkey where the where the active "Wi-Fi" is located
+string QueryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
+LPCSTR queryRegValue(string); //Find the subkey where the where the active "Wi-Fi" is located
 
 int main(){
 
-	setQueryKey();
+	//setQueryKey();
 	//getNetworkInfo();
-	//setNewMac();
+	setNewMac();
 	//revertToOriginalMac();
 
 	cout << endl;
@@ -48,8 +47,11 @@ int main(){
 //Update the 
 void setNewMac(){
 	HKEY hKey;
-	LPCTSTR sk = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\0000");
+	string key = QueryKey();
+	LPCSTR sk = key.c_str();
+	
 	LPCTSTR keyData = TEXT("0A7777777777");
+	cout << keyData;
 	LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, sk, 0, KEY_ALL_ACCESS, &hKey);
 
 	if (retval == ERROR_SUCCESS) {
@@ -164,7 +166,7 @@ LPCSTR getNetworkInfo(){
 
 		//Cycles through the Network Adapters, ouputs name, type and operational status
 		while (pCurrAddresses) {
-			/*
+			
 			printf("\tAdapter name: %s\n", pCurrAddresses->AdapterName);
 			printf("\tDescription: %wS\n", pCurrAddresses->Description);
 			printf("\tFriendly name: %wS\n", pCurrAddresses->FriendlyName);
@@ -181,13 +183,13 @@ LPCSTR getNetworkInfo(){
 						(int)pCurrAddresses->PhysicalAddress[i]);
 				}
 			}
-			*/
+			
 			//check to see if network adapter is "Wi-fi"
 			//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
 			networkAdap = pCurrAddresses->FriendlyName;
 			if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){ //87 == "Wi-Fi"
 				//printf("\t***Success******8:  Friendly name == %wS\n", pCurrAddresses->FriendlyName);
-				//cout << pCurrAddresses->AdapterName << endl;
+				cout << pCurrAddresses->AdapterName << endl;
 				driverDesc = pCurrAddresses->AdapterName;
 				adapName = pCurrAddresses->AdapterName;
 				return adapName;
@@ -224,23 +226,8 @@ LPCSTR getNetworkInfo(){
 
 }
 
-//Set the registry key
-void setQueryKey(){
-	HKEY hTestKey;
-	LPCSTR dir = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}");
-	LONG checkReg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &hTestKey);
-	//cout << checkReg;
 
-	if (checkReg == ERROR_SUCCESS)
-	{
-		QueryKey(hTestKey);
-	}
-	RegCloseKey(hTestKey);
-
-}
-
-
-void QueryKey(HKEY hKey)
+string QueryKey()
 {
 	
 	TCHAR    achKey[MAX_KEY_LENGTH];   // buffer for subkey name
@@ -261,7 +248,17 @@ void QueryKey(HKEY hKey)
 	TCHAR  achValue[MAX_VALUE_NAME];
 	DWORD cchValue = MAX_VALUE_NAME;
 
+	HKEY hKey;
+	LPCSTR dir = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}");
+	LONG checkReg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &hKey);
+	//cout << checkReg;
+
+	if (checkReg == ERROR_SUCCESS)
+	{
+		cout << "Success opening key" << endl;
+	}
 	// Get the class name and the value count. 
+
 	retCode = RegQueryInfoKey(
 		hKey,                    // key handle 
 		achClass,                // buffer for class name 
@@ -292,14 +289,21 @@ void QueryKey(HKEY hKey)
 			{
 				//_tprintf(TEXT("(%d) %s\n"), i + 1, achKey);
 				subkey = achKey;
-				queryRegValue(subkey);
+				//queryRegValue(subkey);
+
+				string key = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subkey;
+				//cout << key;
+				//Convert string to windows data type
+				LPCSTR findKey = key.c_str();
+				cout << findKey;
+				return key;
 			};
 		}
 	}
 }
 
 //Find the subkey where the where the active "Wi-Fi" is located
-void queryRegValue(string subKey){
+LPCTSTR queryRegValue(string subKey){
 
 	//set up our variables and buffers.
 	DWORD dwType = REG_SZ;
@@ -331,5 +335,5 @@ void queryRegValue(string subKey){
 				cout << "NetCfgInstanceId = " << szVersion <<endl;
 		}
 	}
-
+	return findKey;
 }
