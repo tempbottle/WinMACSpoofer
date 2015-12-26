@@ -32,19 +32,21 @@ void setNewMac(); //Set the "Wi-Fi" adapter's new mac address
 void revertToOriginalMac(); //change the mac Address back to the original
 string QueryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
 LPCSTR queryRegValue(string); //Find the subkey where the where the active "Wi-Fi" is located
+void printCurrentMAcAddress();//prints the curernt MAC Address of the active nic
 
 int main(){
 
 	//setQueryKey();
 	//getNetworkInfo();
-	setNewMac();
+	//setNewMac();
 	//revertToOriginalMac();
+	printCurrentMAcAddress();
 
 	cout << endl;
 	system("pause");
 }
 
-//Update the 
+
 void setNewMac(){
 	HKEY hKey;
 	string key = QueryKey();
@@ -328,12 +330,120 @@ LPCTSTR queryRegValue(string subKey){
 		if (ERROR_SUCCESS == lResult)
 		{
 			LPCSTR comp = getNetworkInfo();
-			string test = comp;
-			string sadf (reinterpret_cast<char *>(szVersion));
+			string netInfo = comp;
+			string netInstId (reinterpret_cast<char *>(szVersion));
 
-			if (test == sadf)
+			if (netInfo == netInstId)
 				cout << "NetCfgInstanceId = " << szVersion <<endl;
 		}
 	}
 	return findKey;
+}
+
+void printCurrentMAcAddress(){
+	/* Declare and initialize variables */
+
+	PWCHAR networkAdap = NULL;
+	PCHAR driverDesc = NULL;
+
+	DWORD dwSize = 0;
+	DWORD dwRetVal = 0;
+
+	unsigned int i = 0;
+
+	// Set the flags to pass to GetAdaptersAddresses
+	ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+
+	// default to unspecified address family (both)
+	ULONG family = AF_UNSPEC;
+
+	LPVOID lpMsgBuf = NULL;
+
+	PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+	ULONG outBufLen = 0;
+	ULONG Iterations = 0;
+
+	PIP_ADAPTER_ADDRESSES pCurrAddresses = NULL;
+
+	// Allocate a 15 KB buffer to start with.
+	outBufLen = WORKING_BUFFER_SIZE;
+
+	do {
+
+		pAddresses = (IP_ADAPTER_ADDRESSES *)MALLOC(outBufLen);
+		if (pAddresses == NULL) {
+			printf
+				("Memory allocation failed for IP_ADAPTER_ADDRESSES struct\n");
+			exit(1);
+		}
+
+		dwRetVal =
+			GetAdaptersAddresses(family, flags, NULL, pAddresses, &outBufLen);
+
+		if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+			FREE(pAddresses);
+			pAddresses = NULL;
+		}
+		else {
+			break;
+		}
+
+		Iterations++;
+
+	} while ((dwRetVal == ERROR_BUFFER_OVERFLOW) && (Iterations < MAX_TRIES));
+
+	if (dwRetVal == NO_ERROR) {
+		// If successful, output some information from the data we received
+		pCurrAddresses = pAddresses;
+
+		//Cycles through the Network Adapters, ouputs name, type and operational status
+		while (pCurrAddresses) {
+
+
+			//check to see if network adapter is "Wi-fi"
+			//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
+			networkAdap = pCurrAddresses->FriendlyName;
+			if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){ //87 == "Wi-Fi"
+				
+				if (pCurrAddresses->PhysicalAddressLength != 0) {
+					printf("\tPhysical address: ");
+					for (i = 0; i < (int)pCurrAddresses->PhysicalAddressLength; i++) {
+						if (i == (pCurrAddresses->PhysicalAddressLength - 1))
+							printf("%.2X\n",
+							(int)pCurrAddresses->PhysicalAddress[i]);
+						else{
+							printf("%.2X-",
+								(int)pCurrAddresses->PhysicalAddress[i]);
+						}
+					}
+				}
+			}
+			pCurrAddresses = pCurrAddresses->Next;
+		}
+
+	}
+	else {
+		printf("Call to GetAdaptersAddresses failed with error: %d\n",
+			dwRetVal);
+		if (dwRetVal == ERROR_NO_DATA)
+			printf("\tNo addresses were found for the requested parameters\n");
+		else {
+
+			if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+				FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+				NULL, dwRetVal, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				// Default language
+				(LPTSTR)& lpMsgBuf, 0, NULL)) {
+				printf("\tError: %s", lpMsgBuf);
+				LocalFree(lpMsgBuf);
+				if (pAddresses)
+					FREE(pAddresses);
+				exit(1);
+			}
+		}
+	}
+
+	if (pAddresses) {
+		FREE(pAddresses);
+	}
 }
