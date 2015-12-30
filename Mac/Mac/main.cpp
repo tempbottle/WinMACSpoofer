@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <tchar.h>
 #include <malloc.h>
+#include <ctime>
 
 #pragma comment(lib,"IPHlpApi.Lib")
 
@@ -33,6 +34,7 @@ void revertToOriginalMac(); //change the mac Address back to the original
 string QueryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
 LPCSTR queryRegValue(string); //Find the subkey where the where the active "Wi-Fi" is located
 void printCurrentMAcAddress();//prints the curernt MAC Address of the active nic
+LPCTSTR randomizeMAC();
 
 int main(){
 
@@ -40,7 +42,8 @@ int main(){
 	//getNetworkInfo();
 	//setNewMac();
 	//revertToOriginalMac();
-	printCurrentMAcAddress();
+	//printCurrentMAcAddress();
+	randomizeMAC();
 
 	cout << endl;
 	system("pause");
@@ -75,9 +78,6 @@ void setNewMac(){
 
 	system("netsh interface set interface ""Wi-Fi"" DISABLED");
 	system("netsh interface set interface ""Wi-Fi"" ENABLED");
-	//system("netsh wlan connect name=DG1670AD2");
-
-
 
 }
 
@@ -101,7 +101,6 @@ void revertToOriginalMac(){
 
 	system("netsh interface set interface ""Wi-Fi"" DISABLED");
 	system("netsh interface set interface ""Wi-Fi"" ENABLED");
-	//system("netsh wlan connect name=DG1670AD2");
 
 }
 
@@ -399,7 +398,6 @@ void printCurrentMAcAddress(){
 		//Cycles through the Network Adapters, ouputs name, type and operational status
 		while (pCurrAddresses) {
 
-
 			//check to see if network adapter is "Wi-fi"
 			//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
 			networkAdap = pCurrAddresses->FriendlyName;
@@ -446,4 +444,30 @@ void printCurrentMAcAddress(){
 	if (pAddresses) {
 		FREE(pAddresses);
 	}
+}
+
+
+LPCTSTR randomizeMAC(){
+
+	srand(time(0)); //Sees the rand() function
+	LPCTSTR randMAC = "";
+	string newMAC;
+	char arra[] = { 'A', 'E', '2', '6' };
+
+	for (int i = 0; i < 6; i++){
+
+		newMAC += static_cast<char>(rand() % 10 + 48);
+
+		//Windows physical address first octet must be 2, 6, A ,E
+		if (i == 0)
+			newMAC += arra[rand() % 4];
+		else
+			newMAC += static_cast<char>(rand() % 10 + 48);
+
+		if (i < 5)
+			newMAC += '-';
+
+	}
+	cout << "Random MAC = " << newMAC << endl;
+	return randMAC;
 }
