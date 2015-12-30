@@ -469,5 +469,6 @@ LPCTSTR randomizeMAC(){
 
 	}
 	cout << "Random MAC = " << newMAC << endl;
+	randMAC = newMAC.c_str();
 	return randMAC;
 }
