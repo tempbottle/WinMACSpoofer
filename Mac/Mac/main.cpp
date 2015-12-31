@@ -39,7 +39,7 @@ string randomizeMAC();
 int main(){
 
 	//getNetworkInfo();
-	setNewMac();
+	//setNewMac();
 	//revertToOriginalMac();
 	//printCurrentMAcAddress();
 	//randomizeMAC();
@@ -451,17 +451,17 @@ string randomizeMAC(){
 
 	srand(time(0)); //Seeds the rand() function
 	string newMAC;
-	char arra[] = { 'A', 'E', '2', '6' };
-
+	char secondNibble[] = { 'A', 'E', '2', '6' };
+	char newValArray[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 	for (int i = 0; i < 6; i++){
 
-		newMAC += static_cast<char>(rand() % 10 + 48);
+		newMAC += newValArray[rand() % 16];
 
 		//Windows physical address second nibble is limited to 2, 6, A ,E
 		if (i == 0)
-			newMAC += arra[rand() % 4];
+			newMAC += secondNibble[rand() % 4];
 		else
-			newMAC += static_cast<char>(rand() % 10 + 48);
+			newMAC += newValArray[rand() % 16];
 
 		if (i < 5)
 			newMAC += '-';
