@@ -34,16 +34,15 @@ void revertToOriginalMac(); //change the mac Address back to the original
 string QueryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
 LPCSTR queryRegValue(string); //Find the subkey where the where the active "Wi-Fi" is located
 void printCurrentMAcAddress();//prints the curernt MAC Address of the active nic
-LPCTSTR randomizeMAC();
+string randomizeMAC();
 
 int main(){
 
-	//setQueryKey();
 	//getNetworkInfo();
-	//setNewMac();
+	setNewMac();
 	//revertToOriginalMac();
 	//printCurrentMAcAddress();
-	randomizeMAC();
+	//randomizeMAC();
 
 	cout << endl;
 	system("pause");
@@ -55,8 +54,9 @@ void setNewMac(){
 	string key = QueryKey();
 	LPCSTR sk = key.c_str();
 	
-	LPCTSTR keyData = TEXT("0A7777777777");
-	cout << keyData;
+	string newMAC = randomizeMAC();
+	LPCSTR keyData = newMAC.c_str();
+
 	LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, sk, 0, KEY_ALL_ACCESS, &hKey);
 
 	if (retval == ERROR_SUCCESS) {
@@ -447,10 +447,9 @@ void printCurrentMAcAddress(){
 }
 
 
-LPCTSTR randomizeMAC(){
+string randomizeMAC(){
 
-	srand(time(0)); //Sees the rand() function
-	LPCTSTR randMAC = "";
+	srand(time(0)); //Seeds the rand() function
 	string newMAC;
 	char arra[] = { 'A', 'E', '2', '6' };
 
@@ -458,7 +457,7 @@ LPCTSTR randomizeMAC(){
 
 		newMAC += static_cast<char>(rand() % 10 + 48);
 
-		//Windows physical address first octet must be 2, 6, A ,E
+		//Windows physical address second nibble is limited to 2, 6, A ,E
 		if (i == 0)
 			newMAC += arra[rand() % 4];
 		else
@@ -469,6 +468,6 @@ LPCTSTR randomizeMAC(){
 
 	}
 	cout << "Random MAC = " << newMAC << endl;
-	randMAC = newMAC.c_str();
-	return randMAC;
+
+	return newMAC;
 }
