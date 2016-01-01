@@ -23,6 +23,8 @@
 #include <tchar.h>
 #include <malloc.h>
 #include <ctime>
+#include <iomanip>
+#include <sstream>
 
 #pragma comment(lib,"IPHlpApi.Lib")
 
@@ -33,7 +35,7 @@ void setNewMac(); //Set the "Wi-Fi" adapter's new mac address
 void revertToOriginalMac(); //change the mac Address back to the original
 string QueryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
 LPCSTR queryRegValue(string); //Find the subkey where the where the active "Wi-Fi" is located
-void printCurrentMAcAddress();//prints the curernt MAC Address of the active nic
+string returnCurrentMAcAddress();//prints the curernt MAC Address of the active nic
 string randomizeMAC();
 
 int main(){
@@ -41,7 +43,7 @@ int main(){
 	//getNetworkInfo();
 	//setNewMac();
 	//revertToOriginalMac();
-	//printCurrentMAcAddress();
+	returnCurrentMAcAddress();
 	//randomizeMAC();
 
 	cout << endl;
@@ -339,7 +341,7 @@ LPCTSTR queryRegValue(string subKey){
 	return findKey;
 }
 
-void printCurrentMAcAddress(){
+string returnCurrentMAcAddress(){
 	/* Declare and initialize variables */
 
 	PWCHAR networkAdap = NULL;
@@ -349,6 +351,8 @@ void printCurrentMAcAddress(){
 	DWORD dwRetVal = 0;
 
 	unsigned int i = 0;
+
+	string currentMAC;
 
 	// Set the flags to pass to GetAdaptersAddresses
 	ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
@@ -376,8 +380,7 @@ void printCurrentMAcAddress(){
 			exit(1);
 		}
 
-		dwRetVal =
-			GetAdaptersAddresses(family, flags, NULL, pAddresses, &outBufLen);
+		dwRetVal = GetAdaptersAddresses(family, flags, NULL, pAddresses, &outBufLen);
 
 		if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
 			FREE(pAddresses);
@@ -406,12 +409,22 @@ void printCurrentMAcAddress(){
 				if (pCurrAddresses->PhysicalAddressLength != 0) {
 					printf("\tPhysical address: ");
 					for (i = 0; i < (int)pCurrAddresses->PhysicalAddressLength; i++) {
-						if (i == (pCurrAddresses->PhysicalAddressLength - 1))
-							printf("%.2X\n",
-							(int)pCurrAddresses->PhysicalAddress[i]);
+						if (i == (pCurrAddresses->PhysicalAddressLength - 1)){
+							printf("%.2X\n", (int)pCurrAddresses->PhysicalAddress[i]);
+
+							//Convert int to hex
+							stringstream stream;
+							stream << uppercase << hex << (int)pCurrAddresses->PhysicalAddress[i];
+							currentMAC += stream.str();
+						}
 						else{
-							printf("%.2X-",
-								(int)pCurrAddresses->PhysicalAddress[i]);
+							printf("%.2X-", (int)pCurrAddresses->PhysicalAddress[i]);
+
+							//Convert int to hex
+							stringstream stream;
+							stream << uppercase << hex << (int)pCurrAddresses->PhysicalAddress[i];
+							currentMAC += stream.str();
+							currentMAC += "-";
 						}
 					}
 				}
@@ -444,6 +457,10 @@ void printCurrentMAcAddress(){
 	if (pAddresses) {
 		FREE(pAddresses);
 	}
+
+	
+	cout << currentMAC;
+	return currentMAC;
 }
 
 
