@@ -1,0 +1,27 @@
+﻿Build started 1/1/2016 1:01:58 AM.
+     1>Project "C:\Users\PIP\documents\visual studio 2013\Projects\winMACSpoofer\winMACSpoofer\winMACSpoofer.vcxproj" on node 2 (Rebuild target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /AI"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\\" /AI"C:\Program Files (x86)\Windows Kits\8.1\References\CommonConfiguration\Neutral" /AI"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\Facades\\" /Zi /clr /nologo /W3 /WX- /O2 /Oy- /D WIN32 /D NDEBUG /D _UNICODE /D UNICODE /EHa /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /TP /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\mscorlib.dll" /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.dll" /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.dll" /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Drawing.dll" /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Windows.Forms.dll" /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xml.dll" /analyze- /errorReport:prompt /clr:nostdlib functions.cpp MyForm.cpp
+         functions.cpp
+     1>functions.cpp(143): warning C4101: 'achValue' : unreferenced local variable
+     1>functions.cpp(379): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+         MyForm.cpp
+     1>c:\users\pip\documents\visual studio 2013\projects\winmacspoofer\winmacspoofer\MyForm.h(129): warning C4101: 'achValue' : unreferenced local variable
+     1>c:\users\pip\documents\visual studio 2013\projects\winmacspoofer\winmacspoofer\MyForm.h(190): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>MyForm.cpp(9): warning C4829: Possibly incorrect parameters to function main. Consider 'int main(Platform::Array<Platform::String^>^ argv)'
+         Generating Code...
+     1>c:\users\pip\documents\visual studio 2013\projects\winmacspoofer\winmacspoofer\myform.h(188): warning C4715: 'winMACSpoofer::MyForm::QueryKey' : not all control paths return a value
+     1>c:\users\pip\documents\visual studio 2013\projects\winmacspoofer\winmacspoofer\functions.cpp(202): warning C4715: 'QueryKey' : not all control paths return a value
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /clr /nologo /W3 /WX- /O2 /Oy- /D WIN32 /D NDEBUG /D _UNICODE /D UNICODE /EHa /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /TP /analyze- /errorReport:prompt "C:\Users\PIP\AppData\Local\Temp\.NETFramework,Version=v4.5.AssemblyAttributes.cpp"
+         .NETFramework,Version=v4.5.AssemblyAttributes.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\PIP\documents\visual studio 2013\Projects\winMACSpoofer\Release\winMACSpoofer.exe" /INCREMENTAL:NO /NOLOGO /ASSEMBLYRESOURCE:Release\winMACSpoofer.MyForm.resources /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\PIP\documents\visual studio 2013\Projects\winMACSpoofer\Release\winMACSpoofer.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /FIXED:NO /NXCOMPAT /MACHINE:X86 /SAFESEH Release\functions.obj
+         Release\MyForm.obj
+         "Release\.NETFramework,Version=v4.5.AssemblyAttributes.obj"
+     1>MSVCRT.lib(crtexew.obj) : error LNK2019: unresolved external symbol _WinMain@16 referenced in function ___tmainCRTStartup
+     1>C:\Users\PIP\documents\visual studio 2013\Projects\winMACSpoofer\Release\winMACSpoofer.exe : fatal error LNK1120: 1 unresolved externals
+     1>Done Building Project "C:\Users\PIP\documents\visual studio 2013\Projects\winMACSpoofer\winMACSpoofer\winMACSpoofer.vcxproj" (Rebuild target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:03.64
