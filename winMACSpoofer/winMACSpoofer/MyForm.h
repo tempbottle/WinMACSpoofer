@@ -47,7 +47,7 @@ void setNewMac(); //Set the "Wi-Fi" adapter's new mac address
 
 void revertToOriginalMac(); //change the mac Address back to the original
 
-string QueryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
+string queryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
 
 LPCSTR queryRegValue(string); //Find the subkey where the where the active "Wi-Fi" is located
 
@@ -58,7 +58,7 @@ string randomizeMAC();//returns a randomized MAC address
 
 #pragma once
 
-string finalMAC = "";
+string FINAL_MAC = "";
 
 namespace winMACSpoofer {
 	
@@ -343,7 +343,7 @@ namespace winMACSpoofer {
 
 		}
 
-	string QueryKey(){
+	string queryKey(){
 
 			TCHAR    achKey[MAX_KEY_LENGTH];   // buffer for subkey name
 			DWORD    cbName;                   // size of name string 
@@ -447,10 +447,10 @@ namespace winMACSpoofer {
 	void setNewMac(){
 
 		HKEY hKey;
-		string key = QueryKey();
+		string key = queryKey();
 		LPCSTR sk = key.c_str();
 
-		string newMAC = finalMAC;
+		string newMAC = FINAL_MAC;
 		LPCSTR keyData = newMAC.c_str();
 
 		//convert LPCSTR to LPCWSTR
@@ -611,9 +611,13 @@ namespace winMACSpoofer {
 void revertToOriginalMac(){
 
 		HKEY hKey;
-		LPCTSTR sk = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\0000");
+		string activeRegKey = queryKey();
+		LPCSTR sk = activeRegKey.c_str();
+		USES_CONVERSION;
+		LPCWSTR activeRegKeyW = A2W(sk);
+
 		LPWSTR netAddr = TEXT("NetworkAddress");
-		LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, sk, 0, KEY_ALL_ACCESS, &hKey);
+		LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, activeRegKeyW, 0, KEY_ALL_ACCESS, &hKey);
 
 		if (retval == ERROR_SUCCESS) {
 			printf("Success opening key.");
@@ -645,8 +649,8 @@ private: System::Void label1_Click(System::Object^  sender, System::EventArgs^  
 }
 
 private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
-	finalMAC = randomizeMAC();
-	String ^systemstringRandom = gcnew String(finalMAC.c_str());
+	FINAL_MAC = randomizeMAC();
+	String ^systemstringRandom = gcnew String(FINAL_MAC.c_str());
 	this->textBox2->Text = systemstringRandom;
 }
 
@@ -675,7 +679,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 		manualMAC += "-";
 		manualMAC += this->textBox8->Text;
 
-		finalMAC = msclr::interop::marshal_as<std::string>(manualMAC);
+		FINAL_MAC = msclr::interop::marshal_as<std::string>(manualMAC);
 		setNewMac();
 
 		Sleep(4000);
