@@ -24,8 +24,6 @@
 #include <malloc.h>
 #include <ctime>
 #include <atlbase.h>
-#include "atlstr.h"
-#include "comutil.h"
 #include <msclr\marshal_cppstd.h>
 #include <msclr\marshal.h>
 #include <iomanip>
@@ -40,24 +38,19 @@ using namespace System;
 using namespace System::Windows::Forms;
 
 
-
-LPCSTR getNetworkInfo();//Locates the active "Wi-Fi" adapter
-
 void setNewMac(); //Set the "Wi-Fi" adapter's new mac address
 
 void revertToOriginalMac(); //change the mac Address back to the original
 
 string queryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
 
-LPCSTR queryRegValue(string); //Find the subkey where the where the active "Wi-Fi" is located
-
 string returnCurrentMAcAddress();//returns the curernt MAC Address of the active nic
 
 string randomizeMAC();//returns a randomized MAC address
 
-
 #pragma once
 
+//Global Variable that holds the final user changes to the MAC Address
 string FINAL_MAC = "";
 
 namespace winMACSpoofer {
@@ -115,6 +108,12 @@ namespace winMACSpoofer {
 	private: System::Windows::Forms::RadioButton^  radioButton1;
 	private: System::Windows::Forms::RadioButton^  radioButton2;
 	private: System::Windows::Forms::Label^  label4;
+	private: System::Windows::Forms::GroupBox^  groupBox1;
+	private: System::Windows::Forms::ProgressBar^  progressBar1;
+	private: System::Windows::Forms::Timer^  timer1;
+
+	private: System::ComponentModel::IContainer^  components;
+
 
 
 
@@ -123,7 +122,7 @@ namespace winMACSpoofer {
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		System::ComponentModel::Container ^components;
+
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -132,6 +131,7 @@ namespace winMACSpoofer {
 		/// </summary>
 		void InitializeComponent(void)
 		{
+			this->components = (gcnew System::ComponentModel::Container());
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
 			this->button2 = (gcnew System::Windows::Forms::Button());
@@ -149,6 +149,10 @@ namespace winMACSpoofer {
 			this->radioButton1 = (gcnew System::Windows::Forms::RadioButton());
 			this->radioButton2 = (gcnew System::Windows::Forms::RadioButton());
 			this->label4 = (gcnew System::Windows::Forms::Label());
+			this->groupBox1 = (gcnew System::Windows::Forms::GroupBox());
+			this->progressBar1 = (gcnew System::Windows::Forms::ProgressBar());
+			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
+			this->groupBox1->SuspendLayout();
 			this->SuspendLayout();
 			// 
 			// label1
@@ -156,7 +160,7 @@ namespace winMACSpoofer {
 			this->label1->AutoSize = true;
 			this->label1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label1->Location = System::Drawing::Point(27, 25);
+			this->label1->Location = System::Drawing::Point(13, 27);
 			this->label1->Name = L"label1";
 			this->label1->Size = System::Drawing::Size(108, 13);
 			this->label1->TabIndex = 0;
@@ -177,7 +181,7 @@ namespace winMACSpoofer {
 			// 
 			// button2
 			// 
-			this->button2->Location = System::Drawing::Point(252, 168);
+			this->button2->Location = System::Drawing::Point(262, 131);
 			this->button2->Name = L"button2";
 			this->button2->Size = System::Drawing::Size(91, 23);
 			this->button2->TabIndex = 3;
@@ -190,7 +194,7 @@ namespace winMACSpoofer {
 			this->textBox2->Enabled = false;
 			this->textBox2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->textBox2->Location = System::Drawing::Point(144, 62);
+			this->textBox2->Location = System::Drawing::Point(145, 19);
 			this->textBox2->Name = L"textBox2";
 			this->textBox2->ReadOnly = true;
 			this->textBox2->Size = System::Drawing::Size(118, 21);
@@ -199,7 +203,7 @@ namespace winMACSpoofer {
 			// label2
 			// 
 			this->label2->AutoSize = true;
-			this->label2->Location = System::Drawing::Point(27, 65);
+			this->label2->Location = System::Drawing::Point(9, 29);
 			this->label2->Name = L"label2";
 			this->label2->Size = System::Drawing::Size(114, 13);
 			this->label2->TabIndex = 5;
@@ -207,7 +211,7 @@ namespace winMACSpoofer {
 			// 
 			// button1
 			// 
-			this->button1->Location = System::Drawing::Point(268, 62);
+			this->button1->Location = System::Drawing::Point(278, 19);
 			this->button1->Name = L"button1";
 			this->button1->Size = System::Drawing::Size(75, 23);
 			this->button1->TabIndex = 6;
@@ -217,7 +221,7 @@ namespace winMACSpoofer {
 			// 
 			// button3
 			// 
-			this->button3->Location = System::Drawing::Point(15, 209);
+			this->button3->Location = System::Drawing::Point(16, 226);
 			this->button3->Name = L"button3";
 			this->button3->Size = System::Drawing::Size(75, 23);
 			this->button3->TabIndex = 7;
@@ -228,7 +232,7 @@ namespace winMACSpoofer {
 			// label3
 			// 
 			this->label3->AutoSize = true;
-			this->label3->Location = System::Drawing::Point(7, 104);
+			this->label3->Location = System::Drawing::Point(8, 65);
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(128, 13);
 			this->label3->TabIndex = 8;
@@ -236,7 +240,7 @@ namespace winMACSpoofer {
 			// 
 			// textBox3
 			// 
-			this->textBox3->Location = System::Drawing::Point(146, 104);
+			this->textBox3->Location = System::Drawing::Point(145, 65);
 			this->textBox3->MaxLength = 2;
 			this->textBox3->Name = L"textBox3";
 			this->textBox3->Size = System::Drawing::Size(22, 20);
@@ -244,7 +248,7 @@ namespace winMACSpoofer {
 			// 
 			// textBox4
 			// 
-			this->textBox4->Location = System::Drawing::Point(174, 104);
+			this->textBox4->Location = System::Drawing::Point(173, 65);
 			this->textBox4->MaxLength = 2;
 			this->textBox4->Name = L"textBox4";
 			this->textBox4->Size = System::Drawing::Size(22, 20);
@@ -252,7 +256,7 @@ namespace winMACSpoofer {
 			// 
 			// textBox5
 			// 
-			this->textBox5->Location = System::Drawing::Point(202, 104);
+			this->textBox5->Location = System::Drawing::Point(201, 65);
 			this->textBox5->MaxLength = 2;
 			this->textBox5->Name = L"textBox5";
 			this->textBox5->Size = System::Drawing::Size(22, 20);
@@ -260,7 +264,7 @@ namespace winMACSpoofer {
 			// 
 			// textBox6
 			// 
-			this->textBox6->Location = System::Drawing::Point(230, 104);
+			this->textBox6->Location = System::Drawing::Point(229, 65);
 			this->textBox6->MaxLength = 2;
 			this->textBox6->Name = L"textBox6";
 			this->textBox6->Size = System::Drawing::Size(22, 20);
@@ -268,7 +272,7 @@ namespace winMACSpoofer {
 			// 
 			// textBox7
 			// 
-			this->textBox7->Location = System::Drawing::Point(258, 104);
+			this->textBox7->Location = System::Drawing::Point(257, 65);
 			this->textBox7->MaxLength = 2;
 			this->textBox7->Name = L"textBox7";
 			this->textBox7->Size = System::Drawing::Size(22, 20);
@@ -276,7 +280,7 @@ namespace winMACSpoofer {
 			// 
 			// textBox8
 			// 
-			this->textBox8->Location = System::Drawing::Point(286, 104);
+			this->textBox8->Location = System::Drawing::Point(285, 65);
 			this->textBox8->MaxLength = 2;
 			this->textBox8->Name = L"textBox8";
 			this->textBox8->Size = System::Drawing::Size(22, 20);
@@ -285,7 +289,7 @@ namespace winMACSpoofer {
 			// radioButton1
 			// 
 			this->radioButton1->AutoSize = true;
-			this->radioButton1->Location = System::Drawing::Point(121, 145);
+			this->radioButton1->Location = System::Drawing::Point(142, 98);
 			this->radioButton1->Name = L"radioButton1";
 			this->radioButton1->Size = System::Drawing::Size(65, 17);
 			this->radioButton1->TabIndex = 15;
@@ -296,7 +300,7 @@ namespace winMACSpoofer {
 			// radioButton2
 			// 
 			this->radioButton2->AutoSize = true;
-			this->radioButton2->Location = System::Drawing::Point(192, 145);
+			this->radioButton2->Location = System::Drawing::Point(213, 98);
 			this->radioButton2->Name = L"radioButton2";
 			this->radioButton2->Size = System::Drawing::Size(60, 17);
 			this->radioButton2->TabIndex = 16;
@@ -307,183 +311,175 @@ namespace winMACSpoofer {
 			// label4
 			// 
 			this->label4->AutoSize = true;
-			this->label4->Location = System::Drawing::Point(12, 147);
+			this->label4->Location = System::Drawing::Point(8, 102);
 			this->label4->Name = L"label4";
 			this->label4->Size = System::Drawing::Size(105, 13);
 			this->label4->TabIndex = 17;
 			this->label4->Text = L"Set New MAC With :";
+			// 
+			// groupBox1
+			// 
+			this->groupBox1->Controls->Add(this->button1);
+			this->groupBox1->Controls->Add(this->radioButton2);
+			this->groupBox1->Controls->Add(this->label4);
+			this->groupBox1->Controls->Add(this->radioButton1);
+			this->groupBox1->Controls->Add(this->textBox2);
+			this->groupBox1->Controls->Add(this->label2);
+			this->groupBox1->Controls->Add(this->textBox8);
+			this->groupBox1->Controls->Add(this->label3);
+			this->groupBox1->Controls->Add(this->textBox3);
+			this->groupBox1->Controls->Add(this->textBox4);
+			this->groupBox1->Controls->Add(this->button2);
+			this->groupBox1->Controls->Add(this->textBox5);
+			this->groupBox1->Controls->Add(this->textBox6);
+			this->groupBox1->Controls->Add(this->textBox7);
+			this->groupBox1->Location = System::Drawing::Point(4, 60);
+			this->groupBox1->Name = L"groupBox1";
+			this->groupBox1->Size = System::Drawing::Size(368, 160);
+			this->groupBox1->TabIndex = 18;
+			this->groupBox1->TabStop = false;
+			this->groupBox1->Text = L"Change The MAC Address";
+			// 
+			// progressBar1
+			// 
+			this->progressBar1->Location = System::Drawing::Point(146, 226);
+			this->progressBar1->Name = L"progressBar1";
+			this->progressBar1->Size = System::Drawing::Size(100, 23);
+			this->progressBar1->TabIndex = 19;
+			// 
+			// timer1
+			// 
+			this->timer1->Interval = 4;
+			this->timer1->Tick += gcnew System::EventHandler(this, &MyForm::timer1_Tick);
 			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(384, 261);
-			this->Controls->Add(this->label4);
-			this->Controls->Add(this->radioButton2);
-			this->Controls->Add(this->radioButton1);
-			this->Controls->Add(this->textBox8);
-			this->Controls->Add(this->textBox7);
-			this->Controls->Add(this->textBox6);
-			this->Controls->Add(this->textBox5);
-			this->Controls->Add(this->textBox4);
-			this->Controls->Add(this->textBox3);
-			this->Controls->Add(this->label3);
+			this->Controls->Add(this->progressBar1);
+			this->Controls->Add(this->groupBox1);
 			this->Controls->Add(this->button3);
-			this->Controls->Add(this->button1);
-			this->Controls->Add(this->label2);
-			this->Controls->Add(this->textBox2);
-			this->Controls->Add(this->button2);
 			this->Controls->Add(this->textBox1);
 			this->Controls->Add(this->label1);
 			this->Name = L"MyForm";
 			this->Text = L"MyForm";
 			this->Load += gcnew System::EventHandler(this, &MyForm::MyForm_Load);
+			this->groupBox1->ResumeLayout(false);
+			this->groupBox1->PerformLayout();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
 		}
 
-	string queryKey(){
+#pragma endregion
 
-			TCHAR    achKey[MAX_KEY_LENGTH];   // buffer for subkey name
-			DWORD    cbName;                   // size of name string 
-			TCHAR    achClass[MAX_PATH] = TEXT("");  // buffer for class name 
-			DWORD    cchClassName = MAX_PATH;  // size of class string 
-			DWORD    cSubKeys = 0;               // number of subkeys 
-			DWORD    cbMaxSubKey;              // longest subkey size 
-			DWORD    cchMaxClass;              // longest class string 
-			DWORD    cValues;              // number of values for key 
-			DWORD    cchMaxValue;          // longest value name 
-			DWORD    cbMaxValueData;       // longest value data 
-			DWORD    cbSecurityDescriptor; // size of security descriptor 
-			FILETIME ftLastWriteTime;      // last write time 
-
-			DWORD i, retCode;
-
-			TCHAR  achValue[MAX_VALUE_NAME];
-			DWORD cchValue = MAX_VALUE_NAME;
-
-			HKEY hKey;
-			LPCWSTR dir = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}");
-			LONG checkReg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &hKey);
-			//cout << checkReg;
-
-			if (checkReg == ERROR_SUCCESS)
-			{
-				cout << "Success opening key" << endl;
-			}
-			// Get the class name and the value count. 
-
-			retCode = RegQueryInfoKey(
-				hKey,                    // key handle 
-				achClass,                // buffer for class name 
-				&cchClassName,           // size of class string 
-				NULL,                    // reserved 
-				&cSubKeys,               // number of subkeys 
-				&cbMaxSubKey,            // longest subkey size 
-				&cchMaxClass,            // longest class string 
-				&cValues,                // number of values for this key 
-				&cchMaxValue,            // longest value name 
-				&cbMaxValueData,         // longest value data 
-				&cbSecurityDescriptor,   // security descriptor 
-				&ftLastWriteTime);       // last write time 
-
-			// Enumerate the subkeys, until RegEnumKeyEx fails.
-
-			if (cSubKeys)
-			{
-				//printf("\nNumber of subkeys: %d\n", cSubKeys);
-
-				for (i = 0; i < cSubKeys; i++)
-				{
-					cbName = MAX_KEY_LENGTH;
-					retCode = RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, &ftLastWriteTime);
-					//string subKey;
-
-					if (retCode == ERROR_SUCCESS)
-					{
-						//_tprintf(TEXT("(%d) %s\n"), i + 1, achKey);
-						String ^subKey = gcnew String(achKey);
-						//subKey += " (System::String)";
-						string subKeyStr = msclr::interop::marshal_as<std::string>(subKey);
-						//queryRegValue(subkey);
-
-						//string key = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subKey;
-						string key = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subKeyStr;
-
-						//cout << key;
-						//Convert string to windows data type
-						LPCSTR findKey = key.c_str();
-						cout << findKey;
-						return key;
-					};
-				}
-			}
-		}
-
-	string randomizeMAC(){
-			srand(time(0)); //Seeds the rand() function
-			string newMAC;
-			char secondNibble[] = { 'A', 'E', '2', '6' };
-			char newValArray[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-			for (int i = 0; i < 6; i++){
-
-				newMAC += newValArray[rand() % 16];
-
-				//Windows physical address second nibble is limited to 2, 6, A ,E
-				if (i == 0)
-					newMAC += secondNibble[rand() % 4];
-				else
-					newMAC += newValArray[rand() % 16];
-
-				if (i < 5)
-					newMAC += '-';
-
-			}
-
-			return newMAC;
-		}
+private: System::Void MyForm_Load(System::Object^  sender, System::EventArgs^  e) {
+		string currentMAC = returnCurrentMAcAddress();
+		String ^systemstring = gcnew String(currentMAC.c_str());
+		textBox1->Text = systemstring;
+	}
 	
-	void setNewMac(){
+private: System::Void textBox1_TextChanged(System::Object^  sender, System::EventArgs^  e) {
+}
 
-		HKEY hKey;
-		string key = queryKey();
-		LPCSTR sk = key.c_str();
+private: System::Void label1_Click(System::Object^  sender, System::EventArgs^  e) {
+}
 
-		string newMAC = FINAL_MAC;
-		LPCSTR keyData = newMAC.c_str();
+private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
+	FINAL_MAC = randomizeMAC();
+	String ^systemstringRandom = gcnew String(FINAL_MAC.c_str());
+	textBox2->Text = systemstringRandom;
+}
 
-		//convert LPCSTR to LPCWSTR
-		USES_CONVERSION;
-		LPCWSTR skw = A2W(sk);
-		LPCWSTR keyDataW = A2W(keyData);
-		cout << skw;
-		LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, skw, 0, KEY_ALL_ACCESS, &hKey);
+private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e){
 
-		if (retval == ERROR_SUCCESS) {
-			printf("Success opening key.");
-			
-		}
-		else {
-			printf("Error opening key.");
-			cout << retval;
-		}
-		retval = (RegSetValueEx(hKey, TEXT("NetworkAddress"), 0, REG_SZ, (BYTE*)keyDataW, lstrlen(keyDataW) + 17));
+	if (radioButton1->Checked){
+		setNewMac();
 
-		if (retval == ERROR_SUCCESS){
-			printf("Success setting key. ");
-		}
-		else {
-			printf("Error setting key.");
-		}
-		retval = RegCloseKey(hKey);
-
-
-		system("netsh interface set interface ""Wi-Fi"" DISABLED");
-		system("netsh interface set interface ""Wi-Fi"" ENABLED");
+		Sleep(4000);
+		string currentMAC = returnCurrentMAcAddress();
+		String ^systemstring = gcnew String(currentMAC.c_str());
+		textBox1->Text = systemstring;
 
 	}
+	else if (radioButton2->Checked){
+		String ^manualMAC;
+		manualMAC += textBox3->Text;
+		manualMAC += "-";
+		manualMAC += textBox4->Text;
+		manualMAC += "-";
+		manualMAC += textBox5->Text;
+		manualMAC += "-";
+		manualMAC += textBox6->Text;
+		manualMAC += "-";
+		manualMAC += textBox7->Text;
+		manualMAC += "-";
+		manualMAC += textBox8->Text;
 
+		FINAL_MAC = msclr::interop::marshal_as<std::string>(manualMAC);
+		setNewMac();
+
+		Sleep(4000);
+		string currentMAC = returnCurrentMAcAddress();
+		String ^systemstring = gcnew String(currentMAC.c_str());
+		textBox1->Text = systemstring;
+
+	}
+	else{
+
+	}
+}
+
+private: System::Void button3_Click(System::Object^  sender, System::EventArgs^  e){
+	//timer1->Start();
+	//button3->Text = L"Test";
+	revertToOriginalMac();
+	
+	Sleep(4000);
+	string currentMAC = returnCurrentMAcAddress();
+	String ^systemstring = gcnew String(currentMAC.c_str());
+	textBox1->Text = systemstring;
+
+}
+
+private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e) {
+	progressBar1->Increment(1);
+	
+}
+	/*
+		Functions for changing the MAC
+	*/
+
+	//Reset the MAC back to that of the computers nic
+	void revertToOriginalMac(){
+
+			 HKEY hKey;
+			 string activeRegKey = queryKey();
+			 LPCSTR sk = activeRegKey.c_str();
+			 USES_CONVERSION;
+			 LPCWSTR activeRegKeyW = A2W(sk);
+
+			 LPWSTR netAddr = TEXT("NetworkAddress");
+			 LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, activeRegKeyW, 0, KEY_ALL_ACCESS, &hKey);
+
+			 if (retval == ERROR_SUCCESS) {
+				 printf("Success opening key.");
+			 }
+			 else {
+				 printf("Error opening key.");
+			 }
+			 retval = RegDeleteValue(hKey, netAddr);
+
+			 retval = RegCloseKey(hKey);
+
+
+			 system("netsh interface set interface ""Wi-Fi"" DISABLED");
+			 system("netsh interface set interface ""Wi-Fi"" ENABLED");
+
+		 }
+
+	//Function that returns the current MAC Address
 	string returnCurrentMAcAddress(){
 		/* Declare and initialize variables */
 
@@ -557,7 +553,7 @@ namespace winMACSpoofer {
 
 								//Convert int to hex
 								stringstream stream;
-								stream << setw(2) << uppercase << hex << std::setfill('0') 
+								stream << setw(2) << uppercase << hex << std::setfill('0')
 									<< (int)pCurrAddresses->PhysicalAddress[i];
 								currentMAC += stream.str();
 							}
@@ -566,7 +562,7 @@ namespace winMACSpoofer {
 
 								//Convert int to hex
 								stringstream stream;
-								stream << setw(2) << uppercase << hex << std::setfill('0') 
+								stream << setw(2) << uppercase << hex << std::setfill('0')
 									<< (int)pCurrAddresses->PhysicalAddress[i];
 								currentMAC += stream.str();
 								currentMAC += "-";
@@ -576,7 +572,7 @@ namespace winMACSpoofer {
 				}
 				pCurrAddresses = pCurrAddresses->Next;
 			}
-			
+
 		}
 		else {
 			printf("Call to GetAdaptersAddresses failed with error: %d\n",
@@ -608,25 +604,63 @@ namespace winMACSpoofer {
 		return currentMAC;
 	}
 
-void revertToOriginalMac(){
+	//Function that returns a string of a random MAC addess
+	string randomizeMAC(){
+		srand(time(0)); //Seeds the rand() function
+		string newMAC;
+		char secondNibble[] = { 'A', 'E', '2', '6' };
+		char newValArray[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+		for (int i = 0; i < 6; i++){
+
+			newMAC += newValArray[rand() % 16];
+
+			//Windows physical address second nibble is limited to 2, 6, A ,E
+			if (i == 0)
+				newMAC += secondNibble[rand() % 4];
+			else
+				newMAC += newValArray[rand() % 16];
+
+			if (i < 5)
+				newMAC += '-';
+
+		}
+
+		return newMAC;
+	}
+
+	//Function that spoofs a new MAC address
+	void setNewMac(){
 
 		HKEY hKey;
-		string activeRegKey = queryKey();
-		LPCSTR sk = activeRegKey.c_str();
-		USES_CONVERSION;
-		LPCWSTR activeRegKeyW = A2W(sk);
+		string key = queryKey();
+		LPCSTR sk = key.c_str();
 
-		LPWSTR netAddr = TEXT("NetworkAddress");
-		LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, activeRegKeyW, 0, KEY_ALL_ACCESS, &hKey);
+		string newMAC = FINAL_MAC;
+		LPCSTR keyData = newMAC.c_str();
+
+		//convert LPCSTR to LPCWSTR
+		USES_CONVERSION;
+		LPCWSTR skw = A2W(sk);
+		LPCWSTR keyDataW = A2W(keyData);
+		cout << skw;
+		LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, skw, 0, KEY_ALL_ACCESS, &hKey);
 
 		if (retval == ERROR_SUCCESS) {
 			printf("Success opening key.");
+
 		}
 		else {
 			printf("Error opening key.");
+			cout << retval;
 		}
-		retval = RegDeleteValue(hKey, netAddr);
+		retval = (RegSetValueEx(hKey, TEXT("NetworkAddress"), 0, REG_SZ, (BYTE*)keyDataW, lstrlen(keyDataW) + 17));
 
+		if (retval == ERROR_SUCCESS){
+			printf("Success setting key. ");
+		}
+		else {
+			printf("Error setting key.");
+		}
 		retval = RegCloseKey(hKey);
 
 
@@ -634,78 +668,84 @@ void revertToOriginalMac(){
 		system("netsh interface set interface ""Wi-Fi"" ENABLED");
 
 	}
-#pragma endregion
 
-private: System::Void MyForm_Load(System::Object^  sender, System::EventArgs^  e) {
-		string currentMAC = returnCurrentMAcAddress();
-		String ^systemstring = gcnew String(currentMAC.c_str());
-		this->textBox1->Text = systemstring;
+	//Function that returns a path a registry key with the active nic
+	string queryKey(){
+
+		TCHAR    achKey[MAX_KEY_LENGTH];   // buffer for subkey name
+		DWORD    cbName;                   // size of name string 
+		TCHAR    achClass[MAX_PATH] = TEXT("");  // buffer for class name 
+		DWORD    cchClassName = MAX_PATH;  // size of class string 
+		DWORD    cSubKeys = 0;               // number of subkeys 
+		DWORD    cbMaxSubKey;              // longest subkey size 
+		DWORD    cchMaxClass;              // longest class string 
+		DWORD    cValues;              // number of values for key 
+		DWORD    cchMaxValue;          // longest value name 
+		DWORD    cbMaxValueData;       // longest value data 
+		DWORD    cbSecurityDescriptor; // size of security descriptor 
+		FILETIME ftLastWriteTime;      // last write time 
+
+		DWORD i, retCode;
+
+		TCHAR  achValue[MAX_VALUE_NAME];
+		DWORD cchValue = MAX_VALUE_NAME;
+
+		HKEY hKey;
+		LPCWSTR dir = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}");
+		LONG checkReg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &hKey);
+
+		if (checkReg == ERROR_SUCCESS)
+		{
+			cout << "Success opening key" << endl;
+		}
+		// Get the class name and the value count. 
+
+		retCode = RegQueryInfoKey(
+			hKey,                    // key handle 
+			achClass,                // buffer for class name 
+			&cchClassName,           // size of class string 
+			NULL,                    // reserved 
+			&cSubKeys,               // number of subkeys 
+			&cbMaxSubKey,            // longest subkey size 
+			&cchMaxClass,            // longest class string 
+			&cValues,                // number of values for this key 
+			&cchMaxValue,            // longest value name 
+			&cbMaxValueData,         // longest value data 
+			&cbSecurityDescriptor,   // security descriptor 
+			&ftLastWriteTime);       // last write time 
+
+		// Enumerate the subkeys, until RegEnumKeyEx fails.
+
+		if (cSubKeys)
+		{
+			//printf("\nNumber of subkeys: %d\n", cSubKeys);
+
+			for (i = 0; i < cSubKeys; i++)
+			{
+				cbName = MAX_KEY_LENGTH;
+				retCode = RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, &ftLastWriteTime);
+				//string subKey;
+
+				if (retCode == ERROR_SUCCESS)
+				{
+					//_tprintf(TEXT("(%d) %s\n"), i + 1, achKey);
+					String ^subKey = gcnew String(achKey);
+					//subKey += " (System::String)";
+					string subKeyStr = msclr::interop::marshal_as<std::string>(subKey);
+					//queryRegValue(subkey);
+
+					string key = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subKeyStr;
+
+					//cout << key;
+					//Convert string to windows data type
+					LPCSTR findKey = key.c_str();
+					cout << findKey;
+					return key;
+				};
+			}
+		}
 	}
-	
-private: System::Void textBox1_TextChanged(System::Object^  sender, System::EventArgs^  e) {
-}
-
-private: System::Void label1_Click(System::Object^  sender, System::EventArgs^  e) {
-}
-
-private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
-	FINAL_MAC = randomizeMAC();
-	String ^systemstringRandom = gcnew String(FINAL_MAC.c_str());
-	this->textBox2->Text = systemstringRandom;
-}
-
-private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e){
-
-	if (radioButton1->Checked){
-		setNewMac();
-
-		Sleep(4000);
-		string currentMAC = returnCurrentMAcAddress();
-		String ^systemstring = gcnew String(currentMAC.c_str());
-		this->textBox1->Text = systemstring;
-
-	}
-	else if (radioButton2->Checked){
-		String ^manualMAC;
-		manualMAC += this->textBox3->Text;
-		manualMAC += "-";
-		manualMAC += this->textBox4->Text;
-		manualMAC += "-";
-		manualMAC += this->textBox5->Text;
-		manualMAC += "-";
-		manualMAC += this->textBox6->Text;
-		manualMAC += "-";
-		manualMAC += this->textBox7->Text;
-		manualMAC += "-";
-		manualMAC += this->textBox8->Text;
-
-		FINAL_MAC = msclr::interop::marshal_as<std::string>(manualMAC);
-		setNewMac();
-
-		Sleep(4000);
-		string currentMAC = returnCurrentMAcAddress();
-		String ^systemstring = gcnew String(currentMAC.c_str());
-		this->textBox1->Text = systemstring;
-
-	}
-	else{
-
-	}
-}
-
-private: System::Void button3_Click(System::Object^  sender, System::EventArgs^  e){
-	revertToOriginalMac();
-
-	Sleep(4000);
-	string currentMAC = returnCurrentMAcAddress();
-	String ^systemstring = gcnew String(currentMAC.c_str());
-	this->textBox1->Text = systemstring;
-}
-
 
 };
 
 }
-
-
-
