@@ -51,10 +51,13 @@ string randomizeMAC();//returns a randomized MAC address
 
 wstring getHostName();
 
+void setNewHostName();
+
 #pragma once
 
 //Global Variable that holds the final user changes to the MAC Address
 string FINAL_MAC = "";
+string HOST_NAME = "";
 
 namespace winMACSpoofer {
 	
@@ -116,11 +119,12 @@ namespace winMACSpoofer {
 	private: System::Windows::Forms::Timer^  timer1;
 	private: System::Windows::Forms::Label^  label5;
 	private: System::Windows::Forms::TextBox^  textBox9;
+	private: System::Windows::Forms::GroupBox^  groupBox2;
+	private: System::Windows::Forms::Button^  button4;
+	private: System::Windows::Forms::TextBox^  textBox10;
+	private: System::Windows::Forms::Label^  label6;
 
 	private: System::ComponentModel::IContainer^  components;
-
-
-
 
 
 	private:
@@ -159,7 +163,12 @@ namespace winMACSpoofer {
 			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
 			this->label5 = (gcnew System::Windows::Forms::Label());
 			this->textBox9 = (gcnew System::Windows::Forms::TextBox());
+			this->groupBox2 = (gcnew System::Windows::Forms::GroupBox());
+			this->label6 = (gcnew System::Windows::Forms::Label());
+			this->textBox10 = (gcnew System::Windows::Forms::TextBox());
+			this->button4 = (gcnew System::Windows::Forms::Button());
 			this->groupBox1->SuspendLayout();
+			this->groupBox2->SuspendLayout();
 			this->SuspendLayout();
 			// 
 			// label1
@@ -353,7 +362,6 @@ namespace winMACSpoofer {
 			this->progressBar1->Name = L"progressBar1";
 			this->progressBar1->Size = System::Drawing::Size(226, 23);
 			this->progressBar1->TabIndex = 19;
-			
 			// 
 			// timer1
 			// 
@@ -378,11 +386,50 @@ namespace winMACSpoofer {
 			this->textBox9->Size = System::Drawing::Size(116, 20);
 			this->textBox9->TabIndex = 21;
 			// 
+			// groupBox2
+			// 
+			this->groupBox2->Controls->Add(this->button4);
+			this->groupBox2->Controls->Add(this->textBox10);
+			this->groupBox2->Controls->Add(this->label6);
+			this->groupBox2->Location = System::Drawing::Point(378, 60);
+			this->groupBox2->Name = L"groupBox2";
+			this->groupBox2->Size = System::Drawing::Size(260, 103);
+			this->groupBox2->TabIndex = 22;
+			this->groupBox2->TabStop = false;
+			this->groupBox2->Text = L"Change The Host Name";
+			// 
+			// label6
+			// 
+			this->label6->AutoSize = true;
+			this->label6->Location = System::Drawing::Point(6, 29);
+			this->label6->Name = L"label6";
+			this->label6->Size = System::Drawing::Size(113, 13);
+			this->label6->TabIndex = 0;
+			this->label6->Text = L"Enter New Host Name";
+			// 
+			// textBox10
+			// 
+			this->textBox10->Location = System::Drawing::Point(139, 26);
+			this->textBox10->Name = L"textBox10";
+			this->textBox10->Size = System::Drawing::Size(100, 20);
+			this->textBox10->TabIndex = 1;
+			// 
+			// button4
+			// 
+			this->button4->Location = System::Drawing::Point(138, 65);
+			this->button4->Name = L"button4";
+			this->button4->Size = System::Drawing::Size(113, 23);
+			this->button4->TabIndex = 2;
+			this->button4->Text = L"Change Host Name";
+			this->button4->UseVisualStyleBackColor = true;
+			this->button4->Click += gcnew System::EventHandler(this, &MyForm::button4_Click);
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(636, 277);
+			this->ClientSize = System::Drawing::Size(641, 277);
+			this->Controls->Add(this->groupBox2);
 			this->Controls->Add(this->textBox9);
 			this->Controls->Add(this->label5);
 			this->Controls->Add(this->progressBar1);
@@ -395,6 +442,8 @@ namespace winMACSpoofer {
 			this->Load += gcnew System::EventHandler(this, &MyForm::MyForm_Load);
 			this->groupBox1->ResumeLayout(false);
 			this->groupBox1->PerformLayout();
+			this->groupBox2->ResumeLayout(false);
+			this->groupBox2->PerformLayout();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -479,6 +528,19 @@ private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e
 	progressBar1->Increment(1);
 	
 }
+
+private: System::Void button4_Click(System::Object^  sender, System::EventArgs^  e){
+
+	String ^newHostName;
+	newHostName += textBox10->Text;
+	HOST_NAME = msclr::interop::marshal_as<std::string>(newHostName);
+	setNewHostName();
+
+	wstring currentHostName = getHostName();
+	String ^currentHostNameSystem = gcnew String(currentHostName.c_str());
+	textBox9->Text = currentHostNameSystem;
+
+ }
 	/*
 		Functions for changing the MAC
 	*/
@@ -816,6 +878,36 @@ private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e
 		
 	}
 
+	void setNewHostName(){
+
+		HKEY hKey;
+		
+		LPCWSTR regPath = TEXT("SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters");
+		LPCSTR newHostName = HOST_NAME.c_str();
+		//convert LPCSTR to LPCWSTR
+		USES_CONVERSION;
+		LPCWSTR keyDataW = A2W(newHostName);
+
+		LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, regPath, 0, KEY_ALL_ACCESS, &hKey);
+
+		if (retval == ERROR_SUCCESS) {
+			printf("Success opening key.");
+
+		}
+		else {
+			printf("Error opening key.");
+			cout << retval;
+		}
+		retval = (RegSetValueEx(hKey, TEXT("HostName"), 0, REG_SZ, (BYTE*)keyDataW, lstrlen(keyDataW) + 17));
+
+		if (retval == ERROR_SUCCESS){
+			printf("Success setting key. ");
+		}
+		else {
+			printf("Error setting key.");
+		}
+		retval = RegCloseKey(hKey);
+	}
 
 };
 
