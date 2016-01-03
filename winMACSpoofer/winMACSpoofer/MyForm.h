@@ -5,13 +5,14 @@
 #define MAX_TRIES 3
 #define MAX_KEY_LENGTH 255
 #define MAX_VALUE_NAME 16383
-
+#define _WIN32_WINNT 0x0500
 #define TOTALBYTES 8192
 #define BYTEINCREMENT 4096
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+
 
 #include <iostream>
 #include <string>
@@ -44,9 +45,11 @@ void revertToOriginalMac(); //change the mac Address back to the original
 
 string queryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
 
-string returnCurrentMAcAddress();//returns the curernt MAC Address of the active nic
+string getCurrentMAcAddress();//returns the curernt MAC Address of the active nic
 
 string randomizeMAC();//returns a randomized MAC address
+
+wstring getHostName();
 
 #pragma once
 
@@ -111,6 +114,8 @@ namespace winMACSpoofer {
 	private: System::Windows::Forms::GroupBox^  groupBox1;
 	private: System::Windows::Forms::ProgressBar^  progressBar1;
 	private: System::Windows::Forms::Timer^  timer1;
+	private: System::Windows::Forms::Label^  label5;
+	private: System::Windows::Forms::TextBox^  textBox9;
 
 	private: System::ComponentModel::IContainer^  components;
 
@@ -152,6 +157,8 @@ namespace winMACSpoofer {
 			this->groupBox1 = (gcnew System::Windows::Forms::GroupBox());
 			this->progressBar1 = (gcnew System::Windows::Forms::ProgressBar());
 			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
+			this->label5 = (gcnew System::Windows::Forms::Label());
+			this->textBox9 = (gcnew System::Windows::Forms::TextBox());
 			this->groupBox1->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -221,7 +228,7 @@ namespace winMACSpoofer {
 			// 
 			// button3
 			// 
-			this->button3->Location = System::Drawing::Point(16, 226);
+			this->button3->Location = System::Drawing::Point(12, 242);
 			this->button3->Name = L"button3";
 			this->button3->Size = System::Drawing::Size(75, 23);
 			this->button3->TabIndex = 7;
@@ -342,21 +349,42 @@ namespace winMACSpoofer {
 			// 
 			// progressBar1
 			// 
-			this->progressBar1->Location = System::Drawing::Point(146, 226);
+			this->progressBar1->Location = System::Drawing::Point(146, 242);
 			this->progressBar1->Name = L"progressBar1";
-			this->progressBar1->Size = System::Drawing::Size(100, 23);
+			this->progressBar1->Size = System::Drawing::Size(226, 23);
 			this->progressBar1->TabIndex = 19;
+			
 			// 
 			// timer1
 			// 
 			this->timer1->Interval = 4;
 			this->timer1->Tick += gcnew System::EventHandler(this, &MyForm::timer1_Tick);
 			// 
+			// label5
+			// 
+			this->label5->AutoSize = true;
+			this->label5->Location = System::Drawing::Point(369, 27);
+			this->label5->Name = L"label5";
+			this->label5->Size = System::Drawing::Size(97, 13);
+			this->label5->TabIndex = 20;
+			this->label5->Text = L"Current Host Name";
+			// 
+			// textBox9
+			// 
+			this->textBox9->Enabled = false;
+			this->textBox9->Location = System::Drawing::Point(483, 24);
+			this->textBox9->Name = L"textBox9";
+			this->textBox9->ReadOnly = true;
+			this->textBox9->Size = System::Drawing::Size(116, 20);
+			this->textBox9->TabIndex = 21;
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(384, 261);
+			this->ClientSize = System::Drawing::Size(636, 277);
+			this->Controls->Add(this->textBox9);
+			this->Controls->Add(this->label5);
 			this->Controls->Add(this->progressBar1);
 			this->Controls->Add(this->groupBox1);
 			this->Controls->Add(this->button3);
@@ -375,9 +403,13 @@ namespace winMACSpoofer {
 #pragma endregion
 
 private: System::Void MyForm_Load(System::Object^  sender, System::EventArgs^  e) {
-		string currentMAC = returnCurrentMAcAddress();
+		string currentMAC = getCurrentMAcAddress();
 		String ^systemstring = gcnew String(currentMAC.c_str());
 		textBox1->Text = systemstring;
+
+		wstring currentHostName = getHostName();
+		String ^currentHostNameSystem = gcnew String(currentHostName.c_str());
+		textBox9->Text = currentHostNameSystem;
 	}
 	
 private: System::Void textBox1_TextChanged(System::Object^  sender, System::EventArgs^  e) {
@@ -398,7 +430,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 		setNewMac();
 
 		Sleep(4000);
-		string currentMAC = returnCurrentMAcAddress();
+		string currentMAC = getCurrentMAcAddress();
 		String ^systemstring = gcnew String(currentMAC.c_str());
 		textBox1->Text = systemstring;
 
@@ -421,7 +453,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 		setNewMac();
 
 		Sleep(4000);
-		string currentMAC = returnCurrentMAcAddress();
+		string currentMAC = getCurrentMAcAddress();
 		String ^systemstring = gcnew String(currentMAC.c_str());
 		textBox1->Text = systemstring;
 
@@ -437,7 +469,7 @@ private: System::Void button3_Click(System::Object^  sender, System::EventArgs^ 
 	revertToOriginalMac();
 	
 	Sleep(4000);
-	string currentMAC = returnCurrentMAcAddress();
+	string currentMAC = getCurrentMAcAddress();
 	String ^systemstring = gcnew String(currentMAC.c_str());
 	textBox1->Text = systemstring;
 
@@ -480,7 +512,7 @@ private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e
 		 }
 
 	//Function that returns the current MAC Address
-	string returnCurrentMAcAddress(){
+	string getCurrentMAcAddress(){
 		/* Declare and initialize variables */
 
 		PWCHAR networkAdap = NULL;
@@ -745,6 +777,45 @@ private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e
 			}
 		}
 	}
+
+	//Function that returns the current Host Name
+	wstring getHostName(){
+
+		wstring hostName;
+		//Find HostName begin
+		TCHAR buffer[256] = TEXT("");
+		TCHAR szDescription[8][32] = { TEXT("NetBIOS"),
+			TEXT("DNS hostname"),
+			TEXT("DNS domain"),
+			TEXT("DNS fully-qualified"),
+			TEXT("Physical NetBIOS"),
+			TEXT("Physical DNS hostname"),
+			TEXT("Physical DNS domain"),
+			TEXT("Physical DNS fully-qualified") };
+
+		TCHAR szDescriptionCompare[1][32] = { TEXT("DNS hostname") };
+		int cnf = 0;
+		DWORD dwSize = sizeof(buffer);
+
+		for (cnf = 0; cnf < ComputerNameMax; cnf++)
+		{
+			if (!GetComputerNameEx((COMPUTER_NAME_FORMAT)cnf, buffer, &dwSize))
+			{
+				_tprintf(TEXT("GetComputerNameEx failed (%d)\n"), GetLastError());
+			}
+			else _tprintf(TEXT("%s: %s\n"), szDescription[cnf], buffer);
+
+			if (szDescription[cnf] == szDescription[1]){
+				hostName = buffer;
+			}
+			dwSize = _countof(buffer);
+			ZeroMemory(buffer, dwSize);
+		}
+
+		return hostName;
+		
+	}
+
 
 };
 
