@@ -26,10 +26,9 @@
 #include <ctime>
 #include <atlbase.h>
 #include <msclr\marshal_cppstd.h>
-#include <msclr\marshal.h>
 #include <iomanip>
 #include <sstream>
-
+#include <atlstr.h>
 
 #pragma comment(lib,"IPHlpApi.Lib")
 
@@ -43,8 +42,6 @@ void setNewMac(); //Set the "Wi-Fi" adapter's new mac address
 
 void revertToOriginalMac(); //change the mac Address back to the original
 
-string queryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
-
 string getCurrentMAcAddress();//returns the curernt MAC Address of the active nic
 
 string randomizeMAC();//returns a randomized MAC address
@@ -52,6 +49,12 @@ string randomizeMAC();//returns a randomized MAC address
 wstring getHostName();
 
 void setNewHostName();
+
+wstring queryKey();//Locates the subkey which holds the active "Wi-Fi" adapter
+
+bool queryRegValue(wstring); //Find the subkey where the where the active "Wi-Fi" is located
+
+LPCSTR getNetworkInfo();//Locate the active "Wi-Fi" adapter
 
 #pragma once
 
@@ -549,10 +552,10 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 	void revertToOriginalMac(){
 
 			 HKEY hKey;
-			 string activeRegKey = queryKey();
-			 LPCSTR sk = activeRegKey.c_str();
+			 wstring activeRegKey = queryKey();
+			 LPCWSTR sk = activeRegKey.c_str();
 			 USES_CONVERSION;
-			 LPCWSTR activeRegKeyW = A2W(sk);
+			 LPCWSTR activeRegKeyW = sk;
 
 			 LPWSTR netAddr = TEXT("NetworkAddress");
 			 LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, activeRegKeyW, 0, KEY_ALL_ACCESS, &hKey);
@@ -726,15 +729,14 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 	void setNewMac(){
 
 		HKEY hKey;
-		string key = queryKey();
-		LPCSTR sk = key.c_str();
+		wstring key = queryKey();
 
 		string newMAC = FINAL_MAC;
 		LPCSTR keyData = newMAC.c_str();
 
 		//convert LPCSTR to LPCWSTR
 		USES_CONVERSION;
-		LPCWSTR skw = A2W(sk);
+		LPCWSTR skw = key.c_str();
 		LPCWSTR keyDataW = A2W(keyData);
 		cout << skw;
 		LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, skw, 0, KEY_ALL_ACCESS, &hKey);
@@ -764,7 +766,8 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 	}
 
 	//Function that returns a path a registry key with the active nic
-	string queryKey(){
+	wstring queryKey()
+	{
 
 		TCHAR    achKey[MAX_KEY_LENGTH];   // buffer for subkey name
 		DWORD    cbName;                   // size of name string 
@@ -787,6 +790,7 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 		HKEY hKey;
 		LPCWSTR dir = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}");
 		LONG checkReg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &hKey);
+		//cout << checkReg;
 
 		if (checkReg == ERROR_SUCCESS)
 		{
@@ -818,28 +822,72 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 			{
 				cbName = MAX_KEY_LENGTH;
 				retCode = RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, &ftLastWriteTime);
-				//string subKey;
+				wstring key;
 
 				if (retCode == ERROR_SUCCESS)
 				{
-					//_tprintf(TEXT("(%d) %s\n"), i + 1, achKey);
-					String ^subKey = gcnew String(achKey);
-					//subKey += " (System::String)";
-					string subKeyStr = msclr::interop::marshal_as<std::string>(subKey);
-					//queryRegValue(subkey);
 
-					string key = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subKeyStr;
+					_tprintf(TEXT("(%d) %s\n"), i + 1, achKey);
 
-					//cout << key;
+					wstring subKey = achKey;
+
+					wstring key = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subKey);
+					wcout << key;
 					//Convert string to windows data type
-					LPCSTR findKey = key.c_str();
+					LPCWSTR findKey = key.c_str();
 					cout << findKey;
-					return key;
+					//return bool
+					if (queryRegValue(subKey) == true)
+						return key;
 				};
 			}
 		}
 	}
 
+
+	//Find the subkey where the where the active "Wi-Fi" is located
+	bool queryRegValue(wstring subKey){
+
+		//set up our variables and buffers.
+		DWORD dwType = REG_SZ;
+		TCHAR szVersion[1024];
+		DWORD dwDataSize = MAX_VALUE_NAME;
+		memset(szVersion, 0, 32);
+		wstring key = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subKey);
+
+		wcout << key << endl;
+		//Convert string to windows data type
+		LPCWSTR findKey = key.c_str();
+
+		// open the key for reading.
+		HKEY hkeyDXVer;
+		long lResult = RegOpenKeyEx(HKEY_LOCAL_MACHINE, findKey, 0, KEY_READ, &hkeyDXVer);
+
+		cout << lResult;
+		if (ERROR_SUCCESS == lResult)
+		{
+
+			LPCWSTR type = TEXT("NetCfgInstanceId");
+
+			// read the version value
+			lResult = RegQueryValueExW(hkeyDXVer, type, 0, &dwType, (PBYTE)szVersion, &dwDataSize);
+			cout << lResult;
+			if (ERROR_SUCCESS == lResult)
+			{
+				cout << szVersion;
+				string netInfo = getNetworkInfo();
+				TCHAR netInfoW[1024];
+				_tcscpy_s(netInfoW, CA2T(netInfo.c_str()));
+				wcout << "netinfo =" << netInfoW << " netInstId = " << szVersion << endl;
+				
+				if (*netInfoW == *szVersion){
+					cout << "NetCfgInstanceId = " << szVersion << endl;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	//Function that returns the current Host Name
 	wstring getHostName(){
 
@@ -907,6 +955,131 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 			printf("Error setting key.");
 		}
 		retval = RegCloseKey(hKey);
+	}
+
+	//Access the network Information (operStatus, friendlyname, adaptername)
+	LPCSTR getNetworkInfo(){
+
+
+		/* Declare and initialize variables */
+
+		PWCHAR networkAdap = NULL;
+		PCHAR driverDesc = NULL;
+
+		DWORD dwSize = 0;
+		DWORD dwRetVal = 0;
+
+		unsigned int i = 0;
+
+		// Set the flags to pass to GetAdaptersAddresses
+		ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+
+		// default to unspecified address family (both)
+		ULONG family = AF_UNSPEC;
+
+		LPVOID lpMsgBuf = NULL;
+
+		PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+		ULONG outBufLen = 0;
+		ULONG Iterations = 0;
+
+		PIP_ADAPTER_ADDRESSES pCurrAddresses = NULL;
+
+		// Allocate a 15 KB buffer to start with.
+		outBufLen = WORKING_BUFFER_SIZE;
+
+		//Name of the active Wi-Fi adapter
+		LPCSTR adapName = NULL;
+		do {
+
+			pAddresses = (IP_ADAPTER_ADDRESSES *)MALLOC(outBufLen);
+			if (pAddresses == NULL) {
+				printf
+					("Memory allocation failed for IP_ADAPTER_ADDRESSES struct\n");
+				exit(1);
+			}
+
+			dwRetVal =
+				GetAdaptersAddresses(family, flags, NULL, pAddresses, &outBufLen);
+
+			if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+				FREE(pAddresses);
+				pAddresses = NULL;
+			}
+			else {
+				break;
+			}
+
+			Iterations++;
+
+		} while ((dwRetVal == ERROR_BUFFER_OVERFLOW) && (Iterations < MAX_TRIES));
+
+		if (dwRetVal == NO_ERROR) {
+			// If successful, output some information from the data we received
+			pCurrAddresses = pAddresses;
+
+			//Cycles through the Network Adapters, ouputs name, type and operational status
+			while (pCurrAddresses) {
+
+				printf("\tAdapter name: %s\n", pCurrAddresses->AdapterName);
+				printf("\tDescription: %wS\n", pCurrAddresses->Description);
+				printf("\tFriendly name: %wS\n", pCurrAddresses->FriendlyName);
+
+				if (pCurrAddresses->PhysicalAddressLength != 0) {
+					printf("\tPhysical address: ");
+					for (i = 0; i < (int)pCurrAddresses->PhysicalAddressLength;
+						i++) {
+						if (i == (pCurrAddresses->PhysicalAddressLength - 1))
+							printf("%.2X\n",
+							(int)pCurrAddresses->PhysicalAddress[i]);
+						else
+							printf("%.2X-",
+							(int)pCurrAddresses->PhysicalAddress[i]);
+					}
+				}
+
+				//check to see if network adapter is "Wi-fi"
+				//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
+
+				networkAdap = pCurrAddresses->FriendlyName;
+				if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){ //87 == "Wi-Fi"
+					//printf("\t***Success******8:  Friendly name == %wS\n", pCurrAddresses->FriendlyName);
+					cout << pCurrAddresses->AdapterName << endl;
+					driverDesc = pCurrAddresses->AdapterName;
+					adapName = pCurrAddresses->AdapterName;
+					return adapName;
+				}
+
+				pCurrAddresses = pCurrAddresses->Next;
+			}
+
+		}
+		else {
+			printf("Call to GetAdaptersAddresses failed with error: %d\n",
+				dwRetVal);
+			if (dwRetVal == ERROR_NO_DATA)
+				printf("\tNo addresses were found for the requested parameters\n");
+			else {
+
+				if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+					FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+					NULL, dwRetVal, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+					// Default language
+					(LPTSTR)& lpMsgBuf, 0, NULL)) {
+					printf("\tError: %s", lpMsgBuf);
+					LocalFree(lpMsgBuf);
+					if (pAddresses)
+						FREE(pAddresses);
+					exit(1);
+				}
+			}
+		}
+
+		if (pAddresses) {
+			FREE(pAddresses);
+		}
+		return 0;
+
 	}
 
 };
