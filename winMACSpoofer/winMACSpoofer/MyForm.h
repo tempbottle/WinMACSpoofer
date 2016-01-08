@@ -14,6 +14,7 @@
 #endif
 
 
+
 #include <iostream>
 #include <string>
 #include <Windows.h>
@@ -29,6 +30,7 @@
 #include <iomanip>
 #include <sstream>
 #include <atlstr.h>
+#include <locale>
 
 #pragma comment(lib,"IPHlpApi.Lib")
 
@@ -56,11 +58,14 @@ bool queryRegValue(wstring); //Find the subkey where the where the active "Wi-Fi
 
 LPCSTR getNetworkInfo();//Locate the active "Wi-Fi" adapter
 
+string getNicFriendlyName();
+
 #pragma once
 
 //Global Variable that holds the final user changes to the MAC Address
 string FINAL_MAC = "";
 string HOST_NAME = "";
+string NIC_FRIENDLY_NAME = "";
 
 namespace winMACSpoofer {
 	
@@ -570,9 +575,15 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 
 			 retval = RegCloseKey(hKey);
 
+			 NIC_FRIENDLY_NAME = getNicFriendlyName();
+			 //cout << "\n" << NIC_FRIENDLY_NAME << endl;
 
-			 system("netsh interface set interface ""Wi-Fi"" DISABLED");
-			 system("netsh interface set interface ""Wi-Fi"" ENABLED");
+			 string disableNic = "netsh interface set interface " + NIC_FRIENDLY_NAME + " DISABLED";
+			 cout << " disableNic = " << disableNic;
+			 system(disableNic.c_str());
+
+			 string enableNic = "netsh interface set interface " + NIC_FRIENDLY_NAME + " ENABLED";
+			 system(enableNic.c_str());
 
 		 }
 
@@ -759,9 +770,14 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 		}
 		retval = RegCloseKey(hKey);
 
+		NIC_FRIENDLY_NAME = getNicFriendlyName();
 
-		system("netsh interface set interface ""Wi-Fi"" DISABLED");
-		system("netsh interface set interface ""Wi-Fi"" ENABLED");
+		string disableNic = "netsh interface set interface " + NIC_FRIENDLY_NAME + " DISABLED";
+		cout << " disableNic = " << disableNic;
+		system(disableNic.c_str());
+
+		string enableNic = "netsh interface set interface " + NIC_FRIENDLY_NAME + " ENABLED";
+		system(enableNic.c_str());
 
 	}
 
@@ -1047,7 +1063,20 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 					cout << pCurrAddresses->AdapterName << endl;
 					driverDesc = pCurrAddresses->AdapterName;
 					adapName = pCurrAddresses->AdapterName;
-					return adapName;
+					PWCHAR friendlyName = pCurrAddresses->FriendlyName;
+					wstring friendlyNameW(friendlyName);
+					
+					//Convert wstring to string UTF-16 to UTF-8
+					int len;
+					int slength = (int)friendlyNameW.length();
+					len = WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, 0, 0, 0, 0);
+					string NIC_FRIENDLY_NAME(len, '\0');
+					WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, &NIC_FRIENDLY_NAME[0], len, 0, 0);
+
+					cout << "NIC_FRIENDLY_NAME = " << NIC_FRIENDLY_NAME;
+					cout << "NIC_FRIENDLY_NAME Length = " << NIC_FRIENDLY_NAME.length();
+
+					return adapName;	
 				}
 
 				pCurrAddresses = pCurrAddresses->Next;
@@ -1079,6 +1108,143 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 			FREE(pAddresses);
 		}
 		return 0;
+
+	}
+
+	string getNicFriendlyName(){
+
+		/* Declare and initialize variables */
+
+		PWCHAR networkAdap = NULL;
+		PCHAR driverDesc = NULL;
+
+		DWORD dwSize = 0;
+		DWORD dwRetVal = 0;
+
+		unsigned int i = 0;
+
+		// Set the flags to pass to GetAdaptersAddresses
+		ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+
+		// default to unspecified address family (both)
+		ULONG family = AF_UNSPEC;
+
+		LPVOID lpMsgBuf = NULL;
+
+		PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+		ULONG outBufLen = 0;
+		ULONG Iterations = 0;
+
+		PIP_ADAPTER_ADDRESSES pCurrAddresses = NULL;
+
+		// Allocate a 15 KB buffer to start with.
+		outBufLen = WORKING_BUFFER_SIZE;
+
+		//Name of the active Wi-Fi adapter
+		LPCSTR adapName = NULL;
+		do {
+
+			pAddresses = (IP_ADAPTER_ADDRESSES *)MALLOC(outBufLen);
+			if (pAddresses == NULL) {
+				printf
+					("Memory allocation failed for IP_ADAPTER_ADDRESSES struct\n");
+				exit(1);
+			}
+
+			dwRetVal =
+				GetAdaptersAddresses(family, flags, NULL, pAddresses, &outBufLen);
+
+			if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+				FREE(pAddresses);
+				pAddresses = NULL;
+			}
+			else {
+				break;
+			}
+
+			Iterations++;
+
+		} while ((dwRetVal == ERROR_BUFFER_OVERFLOW) && (Iterations < MAX_TRIES));
+
+		if (dwRetVal == NO_ERROR) {
+			// If successful, output some information from the data we received
+			pCurrAddresses = pAddresses;
+
+			//Cycles through the Network Adapters, ouputs name, type and operational status
+			while (pCurrAddresses) {
+
+				printf("\tAdapter name: %s\n", pCurrAddresses->AdapterName);
+				printf("\tDescription: %wS\n", pCurrAddresses->Description);
+				printf("\tFriendly name: %wS\n", pCurrAddresses->FriendlyName);
+
+				if (pCurrAddresses->PhysicalAddressLength != 0) {
+					printf("\tPhysical address: ");
+					for (i = 0; i < (int)pCurrAddresses->PhysicalAddressLength;
+						i++) {
+						if (i == (pCurrAddresses->PhysicalAddressLength - 1))
+							printf("%.2X\n",
+							(int)pCurrAddresses->PhysicalAddress[i]);
+						else
+							printf("%.2X-",
+							(int)pCurrAddresses->PhysicalAddress[i]);
+					}
+				}
+
+				//check to see if network adapter is "Wi-fi"
+				//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
+
+				networkAdap = pCurrAddresses->FriendlyName;
+				if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){ //87 == "Wi-Fi"
+					//printf("\t***Success******8:  Friendly name == %wS\n", pCurrAddresses->FriendlyName);
+					cout << pCurrAddresses->AdapterName << endl;
+					driverDesc = pCurrAddresses->AdapterName;
+					adapName = pCurrAddresses->AdapterName;
+					PWCHAR friendlyName = pCurrAddresses->FriendlyName;
+					wstring friendlyNameW(friendlyName);
+
+					//Convert wstring to string UTF-16 to UTF-8
+					int len;
+					int slength = (int)friendlyNameW.length();
+					len = WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, 0, 0, 0, 0);
+					string NIC_FRIENDLY_NAME(len, '\0');
+					WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, &NIC_FRIENDLY_NAME[0], len, 0, 0);
+
+					cout << "NIC_FRIENDLY_NAME = " << NIC_FRIENDLY_NAME;
+					cout << "NIC_FRIENDLY_NAME Length = " << NIC_FRIENDLY_NAME.length();
+
+					return NIC_FRIENDLY_NAME;
+				}
+
+				pCurrAddresses = pCurrAddresses->Next;
+			}
+
+		}
+		else {
+			printf("Call to GetAdaptersAddresses failed with error: %d\n",
+				dwRetVal);
+			if (dwRetVal == ERROR_NO_DATA)
+				printf("\tNo addresses were found for the requested parameters\n");
+			else {
+
+				if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+					FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+					NULL, dwRetVal, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+					// Default language
+					(LPTSTR)& lpMsgBuf, 0, NULL)) {
+					printf("\tError: %s", lpMsgBuf);
+					LocalFree(lpMsgBuf);
+					if (pAddresses)
+						FREE(pAddresses);
+					exit(1);
+				}
+			}
+		}
+
+		if (pAddresses) {
+			FREE(pAddresses);
+		}
+		return 0;
+
 
 	}
 
