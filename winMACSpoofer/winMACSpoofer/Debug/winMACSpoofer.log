@@ -1,12 +1,11 @@
-﻿Build started 1/7/2016 11:37:26 PM.
+﻿Build started 1/9/2016 11:05:03 PM.
      1>Project "C:\Users\PIP\Documents\GitHub\WinMACSpoofer\winMACSpoofer\winMACSpoofer\winMACSpoofer.vcxproj" on node 2 (Rebuild target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /AI"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\\" /AI"C:\Program Files (x86)\Windows Kits\8.1\References\CommonConfiguration\Neutral" /AI"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\Facades\\" /Zi /clr /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _UNICODE /D UNICODE /EHa /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /TP /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\mscorlib.dll" /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.dll" /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.dll" /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Drawing.dll" /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Windows.Forms.dll" /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xml.dll" /analyze- /errorReport:prompt /clr:nostdlib MyForm.cpp
          MyForm.cpp
-     1>c:\users\pip\documents\github\winmacspoofer\winmacspoofer\winmacspoofer\MyForm.h(717): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
-     1>c:\users\pip\documents\github\winmacspoofer\winmacspoofer\winmacspoofer\MyForm.h(803): warning C4101: 'achValue' : unreferenced local variable
+     1>c:\users\pip\documents\github\winmacspoofer\winmacspoofer\winmacspoofer\MyForm.h(719): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>c:\users\pip\documents\github\winmacspoofer\winmacspoofer\winmacspoofer\MyForm.h(805): warning C4101: 'achValue' : unreferenced local variable
      1>MyForm.cpp(8): warning C4829: Possibly incorrect parameters to function main. Consider 'int main(Platform::Array<Platform::String^>^ argv)'
-     1>c:\users\pip\documents\github\winmacspoofer\winmacspoofer\winmacspoofer\myform.h(861): warning C4715: 'winMACSpoofer::MyForm::queryKey' : not all control paths return a value
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /clr /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _UNICODE /D UNICODE /EHa /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /TP /analyze- /errorReport:prompt "C:\Users\PIP\AppData\Local\Temp\.NETFramework,Version=v4.5.AssemblyAttributes.cpp"
          .NETFramework,Version=v4.5.AssemblyAttributes.cpp
        Link:
@@ -17,4 +16,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:02.50
+Time Elapsed 00:00:02.75

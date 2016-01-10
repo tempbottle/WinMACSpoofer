@@ -709,6 +709,9 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 
 
 		cout << currentMAC;
+		if (currentMAC == "")
+			currentMAC = "No NetWork Found";
+
 		return currentMAC;
 	}
 
@@ -858,6 +861,8 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 				};
 			}
 		}
+		wstring netFail = L"fail";
+		return netFail;
 	}
 
 
@@ -1055,7 +1060,7 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 				}
 
 				//check to see if network adapter is "Wi-fi"
-				//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
+				printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
 
 				networkAdap = pCurrAddresses->FriendlyName;
 				if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){ //87 == "Wi-Fi"
@@ -1107,7 +1112,8 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 		if (pAddresses) {
 			FREE(pAddresses);
 		}
-		return 0;
+		LPCSTR netFail = "fail";
+		return netFail;
 
 	}
 
@@ -1243,7 +1249,8 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 		if (pAddresses) {
 			FREE(pAddresses);
 		}
-		return 0;
+		string noName = "Error";
+		return noName;
 
 
 	}
