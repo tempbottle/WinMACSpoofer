@@ -579,10 +579,11 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 			 //cout << "\n" << NIC_FRIENDLY_NAME << endl;
 
 			 string disableNic = "netsh interface set interface " + NIC_FRIENDLY_NAME + " DISABLED";
-			 cout << " disableNic = " << disableNic;
+			 cout << "/ndisableNic = " << disableNic;
 			 system(disableNic.c_str());
 
 			 string enableNic = "netsh interface set interface " + NIC_FRIENDLY_NAME + " ENABLED";
+			 cout << "/enableNic = " << enableNic;
 			 system(enableNic.c_str());
 
 		 }
@@ -651,7 +652,7 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 				//check to see if network adapter is "Wi-fi"
 				//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
 				networkAdap = pCurrAddresses->FriendlyName;
-				if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){ //87 == "Wi-Fi"
+				if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87 || *networkAdap == 69){//87 == "Wi-Fi",69 == "Ethernet"
 
 					if (pCurrAddresses->PhysicalAddressLength != 0) {
 						printf("\tPhysical address: ");
@@ -853,8 +854,8 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 					wstring key = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subKey);
 					wcout << key;
 					//Convert string to windows data type
-					LPCWSTR findKey = key.c_str();
-					cout << findKey;
+					//LPCWSTR findKey = key.c_str();
+					//cout << findKey;
 					//return bool
 					if (queryRegValue(subKey) == true)
 						return key;
@@ -901,7 +902,8 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 				_tcscpy_s(netInfoW, CA2T(netInfo.c_str()));
 				wcout << "netinfo =" << netInfoW << " netInstId = " << szVersion << endl;
 				
-				if (*netInfoW == *szVersion){
+				//compare the NetCfgInstanceId to evaluate whether the sub key is correct
+				if (_tcscmp(netInfoW, szVersion) == 0){
 					cout << "NetCfgInstanceId = " << szVersion << endl;
 					return true;
 				}
@@ -1063,7 +1065,7 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 				printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
 
 				networkAdap = pCurrAddresses->FriendlyName;
-				if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){ //87 == "Wi-Fi"
+				if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87 || *networkAdap == 69){//87 == "Wi-Fi",69 == "Ethernet"
 					//printf("\t***Success******8:  Friendly name == %wS\n", pCurrAddresses->FriendlyName);
 					cout << pCurrAddresses->AdapterName << endl;
 					driverDesc = pCurrAddresses->AdapterName;
@@ -1200,7 +1202,7 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 				//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
 
 				networkAdap = pCurrAddresses->FriendlyName;
-				if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87){ //87 == "Wi-Fi"
+				if (pCurrAddresses->OperStatus == 1 && *networkAdap == 87 || *networkAdap == 69){//87 == "Wi-Fi",69 == "Ethernet"
 					//printf("\t***Success******8:  Friendly name == %wS\n", pCurrAddresses->FriendlyName);
 					cout << pCurrAddresses->AdapterName << endl;
 					driverDesc = pCurrAddresses->AdapterName;
