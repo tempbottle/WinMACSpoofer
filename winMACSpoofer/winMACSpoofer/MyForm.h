@@ -2,10 +2,10 @@
 #include "spoofHost.h"
 #include "spoofMac.h"
 
-
 using namespace std;
 using namespace System;
 using namespace System::Windows::Forms;
+
 
 //Global Variables
 string RANDOM_MAC = "";
@@ -20,6 +20,7 @@ namespace winMACSpoofer {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+	using namespace System::Threading;
 	using namespace std;
 	/// <summary>
 	/// Summary for MyForm
@@ -69,13 +70,16 @@ namespace winMACSpoofer {
 	private: System::Windows::Forms::Label^  label4;
 	private: System::Windows::Forms::GroupBox^  groupBox1;
 	private: System::Windows::Forms::ProgressBar^  progressBar1;
-	private: System::Windows::Forms::Timer^  timer1;
+
 	private: System::Windows::Forms::Label^  label5;
 	private: System::Windows::Forms::TextBox^  textBox9;
 	private: System::Windows::Forms::GroupBox^  groupBox2;
 	private: System::Windows::Forms::Button^  button4;
 	private: System::Windows::Forms::TextBox^  textBox10;
 	private: System::Windows::Forms::Label^  label6;
+	private: System::ComponentModel::BackgroundWorker^  backgroundWorker1;
+	private: System::ComponentModel::BackgroundWorker^  backgroundWorker2;
+	private: System::ComponentModel::BackgroundWorker^  backgroundWorker3;
 
 	private: System::ComponentModel::IContainer^  components;
 
@@ -93,7 +97,6 @@ namespace winMACSpoofer {
 		/// </summary>
 		void InitializeComponent(void)
 		{
-			this->components = (gcnew System::ComponentModel::Container());
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
 			this->button2 = (gcnew System::Windows::Forms::Button());
@@ -113,13 +116,15 @@ namespace winMACSpoofer {
 			this->label4 = (gcnew System::Windows::Forms::Label());
 			this->groupBox1 = (gcnew System::Windows::Forms::GroupBox());
 			this->progressBar1 = (gcnew System::Windows::Forms::ProgressBar());
-			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
 			this->label5 = (gcnew System::Windows::Forms::Label());
 			this->textBox9 = (gcnew System::Windows::Forms::TextBox());
 			this->groupBox2 = (gcnew System::Windows::Forms::GroupBox());
-			this->label6 = (gcnew System::Windows::Forms::Label());
-			this->textBox10 = (gcnew System::Windows::Forms::TextBox());
 			this->button4 = (gcnew System::Windows::Forms::Button());
+			this->textBox10 = (gcnew System::Windows::Forms::TextBox());
+			this->label6 = (gcnew System::Windows::Forms::Label());
+			this->backgroundWorker1 = (gcnew System::ComponentModel::BackgroundWorker());
+			this->backgroundWorker2 = (gcnew System::ComponentModel::BackgroundWorker());
+			this->backgroundWorker3 = (gcnew System::ComponentModel::BackgroundWorker());
 			this->groupBox1->SuspendLayout();
 			this->groupBox2->SuspendLayout();
 			this->SuspendLayout();
@@ -316,11 +321,6 @@ namespace winMACSpoofer {
 			this->progressBar1->Size = System::Drawing::Size(226, 23);
 			this->progressBar1->TabIndex = 19;
 			// 
-			// timer1
-			// 
-			this->timer1->Interval = 4;
-			this->timer1->Tick += gcnew System::EventHandler(this, &MyForm::timer1_Tick);
-			// 
 			// label5
 			// 
 			this->label5->AutoSize = true;
@@ -351,22 +351,6 @@ namespace winMACSpoofer {
 			this->groupBox2->TabStop = false;
 			this->groupBox2->Text = L"Change The Host Name";
 			// 
-			// label6
-			// 
-			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(6, 29);
-			this->label6->Name = L"label6";
-			this->label6->Size = System::Drawing::Size(113, 13);
-			this->label6->TabIndex = 0;
-			this->label6->Text = L"Enter New Host Name";
-			// 
-			// textBox10
-			// 
-			this->textBox10->Location = System::Drawing::Point(139, 26);
-			this->textBox10->Name = L"textBox10";
-			this->textBox10->Size = System::Drawing::Size(100, 20);
-			this->textBox10->TabIndex = 1;
-			// 
 			// button4
 			// 
 			this->button4->Location = System::Drawing::Point(138, 65);
@@ -376,6 +360,40 @@ namespace winMACSpoofer {
 			this->button4->Text = L"Change Host Name";
 			this->button4->UseVisualStyleBackColor = true;
 			this->button4->Click += gcnew System::EventHandler(this, &MyForm::button4_Click);
+			// 
+			// textBox10
+			// 
+			this->textBox10->Location = System::Drawing::Point(139, 26);
+			this->textBox10->Name = L"textBox10";
+			this->textBox10->Size = System::Drawing::Size(100, 20);
+			this->textBox10->TabIndex = 1;
+			// 
+			// label6
+			// 
+			this->label6->AutoSize = true;
+			this->label6->Location = System::Drawing::Point(6, 29);
+			this->label6->Name = L"label6";
+			this->label6->Size = System::Drawing::Size(113, 13);
+			this->label6->TabIndex = 0;
+			this->label6->Text = L"Enter New Host Name";
+			// 
+			// backgroundWorker1
+			// 
+			this->backgroundWorker1->WorkerReportsProgress = true;
+			this->backgroundWorker1->WorkerSupportsCancellation = true;
+			this->backgroundWorker1->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &MyForm::backgroundWorker1_DoWork_1);
+			// 
+			// backgroundWorker2
+			// 
+			this->backgroundWorker2->WorkerReportsProgress = true;
+			this->backgroundWorker2->WorkerSupportsCancellation = true;
+			this->backgroundWorker2->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &MyForm::backgroundWorker2_DoWork_2);
+			// 
+			// backgroundWorker3
+			// 
+			this->backgroundWorker3->WorkerReportsProgress = true;
+			this->backgroundWorker3->WorkerSupportsCancellation = true;
+			this->backgroundWorker3->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &MyForm::backgroundWorker3_DoWork_3);
 			// 
 			// MyForm
 			// 
@@ -429,34 +447,32 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 
 private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e){
 
-	if (radioButton1->Checked){
-		
-		spoofMac::setNewMac(RANDOM_MAC);
+	
 
-		Sleep(4000);
+	if (radioButton1->Checked){
+		backgroundWorker1->RunWorkerAsync(1);
+
+		for (int i = 0; i < 10; i++){
+			progressBar1->Value += 10;
+			Sleep(500);
+		}
+
+		Sleep(1000);
 		string currentMAC = spoofMac::getCurrentMAcAddress();
 		String ^systemstring = gcnew String(currentMAC.c_str());
 		textBox1->Text = systemstring;
 
 	}
 	else if (radioButton2->Checked){
-		String ^manualMAC;
-		manualMAC += textBox3->Text;
-		manualMAC += "-";
-		manualMAC += textBox4->Text;
-		manualMAC += "-";
-		manualMAC += textBox5->Text;
-		manualMAC += "-";
-		manualMAC += textBox6->Text;
-		manualMAC += "-";
-		manualMAC += textBox7->Text;
-		manualMAC += "-";
-		manualMAC += textBox8->Text;
 
-		string finalMac = msclr::interop::marshal_as<std::string>(manualMAC);
-		spoofMac::setNewMac(finalMac);
+		backgroundWorker2->RunWorkerAsync(1);
 
-		Sleep(4000);
+		for (int i = 0; i < 10; i++){
+			progressBar1->Value += 10;
+			Sleep(500);
+		} 
+
+		Sleep(1000);
 		string currentMAC = spoofMac::getCurrentMAcAddress();
 		String ^systemstring = gcnew String(currentMAC.c_str());
 		textBox1->Text = systemstring;
@@ -468,8 +484,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 }
 
 private: System::Void button3_Click(System::Object^  sender, System::EventArgs^  e){
-	//timer1->Start();
-	//button3->Text = L"Test";
+	
 	spoofMac::revertToOriginalMac();
 	
 	Sleep(4000);
@@ -479,10 +494,6 @@ private: System::Void button3_Click(System::Object^  sender, System::EventArgs^ 
 
 }
 
-private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e) {
-	progressBar1->Increment(1);
-	
-}
 
 private: System::Void button4_Click(System::Object^  sender, System::EventArgs^  e){
 
@@ -496,6 +507,41 @@ private: System::Void button4_Click(System::Object^  sender, System::EventArgs^ 
 	textBox9->Text = currentHostNameSystem;
 
  }
+
+
+private: System::Void backgroundWorker1_DoWork_1(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
+	
+	spoofMac::setNewMac(RANDOM_MAC);
+	
+}
+
+private: System::Void backgroundWorker2_DoWork_2(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
+
+	String ^manualMAC;
+	manualMAC += textBox3->Text;
+	manualMAC += "-";
+	manualMAC += textBox4->Text;
+	manualMAC += "-";
+	manualMAC += textBox5->Text;
+	manualMAC += "-";
+	manualMAC += textBox6->Text;
+	manualMAC += "-";
+	manualMAC += textBox7->Text;
+	manualMAC += "-";
+	manualMAC += textBox8->Text;
+
+	string finalMac = msclr::interop::marshal_as<std::string>(manualMAC);
+	spoofMac::setNewMac(finalMac);
+	
+
+}
+
+private: System::Void backgroundWorker3_DoWork_3(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
+
+
+
+}
+
 
 };
 
