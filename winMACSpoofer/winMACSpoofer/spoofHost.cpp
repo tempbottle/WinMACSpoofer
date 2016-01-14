@@ -24,9 +24,9 @@
 		{
 			if (!GetComputerNameEx((COMPUTER_NAME_FORMAT)cnf, buffer, &dwSize))
 			{
-				_tprintf(TEXT("GetComputerNameEx failed (%d)\n"), GetLastError());
+				//_tprintf(TEXT("GetComputerNameEx failed (%d)\n"), GetLastError());
 			}
-			else _tprintf(TEXT("%s: %s\n"), szDescription[cnf], buffer);
+			else //_tprintf(TEXT("%s: %s\n"), szDescription[cnf], buffer);
 
 			if (szDescription[cnf] == szDescription[1]){
 				hostName = buffer;
@@ -52,7 +52,7 @@
 		LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, regPath, 0, KEY_ALL_ACCESS, &hKey);
 
 		if (retval == ERROR_SUCCESS) {
-			printf("Success opening key.");
+			//printf("Success opening key.");
 
 		}
 		else {
@@ -62,7 +62,7 @@
 		retval = (RegSetValueEx(hKey, TEXT("HostName"), 0, REG_SZ, (BYTE*)keyDataW, lstrlen(keyDataW) + 17));
 
 		if (retval == ERROR_SUCCESS){
-			printf("Success setting key. ");
+			//printf("Success setting key. ");
 		}
 		else {
 			printf("Error setting key.");

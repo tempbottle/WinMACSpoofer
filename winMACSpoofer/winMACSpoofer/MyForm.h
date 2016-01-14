@@ -7,10 +7,11 @@ using namespace System;
 using namespace System::Windows::Forms;
 
 
+#pragma once
+
 //Global Variables
 string RANDOM_MAC = "";
-
-#pragma once
+string MANUAL_MAC = "";
 
 namespace winMACSpoofer {
 	
@@ -447,17 +448,29 @@ private: System::Void button1_Click(System::Object^  sender, System::EventArgs^ 
 
 private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e){
 
-	
+	String ^manualMAC;
+	manualMAC += textBox3->Text;
+	manualMAC += "-";
+	manualMAC += textBox4->Text;
+	manualMAC += "-";
+	manualMAC += textBox5->Text;
+	manualMAC += "-";
+	manualMAC += textBox6->Text;
+	manualMAC += "-";
+	manualMAC += textBox7->Text;
+	manualMAC += "-";
+	manualMAC += textBox8->Text;
+
+   MANUAL_MAC = msclr::interop::marshal_as<string>(manualMAC);
 
 	if (radioButton1->Checked){
 		backgroundWorker1->RunWorkerAsync(1);
-
+		progressBar1->Value = 0;
 		for (int i = 0; i < 10; i++){
 			progressBar1->Value += 10;
-			Sleep(500);
+			Sleep(800);
 		}
 
-		Sleep(1000);
 		string currentMAC = spoofMac::getCurrentMAcAddress();
 		String ^systemstring = gcnew String(currentMAC.c_str());
 		textBox1->Text = systemstring;
@@ -467,11 +480,15 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 
 		backgroundWorker2->RunWorkerAsync(1);
 
+		progressBar1->Value = 0;
+		
+		
+		
 		for (int i = 0; i < 10; i++){
 			progressBar1->Value += 10;
-			Sleep(500);
-		} 
-
+			Sleep(800);
+		}
+		
 		Sleep(1000);
 		string currentMAC = spoofMac::getCurrentMAcAddress();
 		String ^systemstring = gcnew String(currentMAC.c_str());
@@ -485,9 +502,14 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 
 private: System::Void button3_Click(System::Object^  sender, System::EventArgs^  e){
 	
-	spoofMac::revertToOriginalMac();
+	backgroundWorker3->RunWorkerAsync(1);
+	progressBar1->Value = 0;
+
+	for (int i = 0; i < 10; i++){
+		progressBar1->Value += 10;
+		Sleep(800);
+	}
 	
-	Sleep(4000);
 	string currentMAC = spoofMac::getCurrentMAcAddress();
 	String ^systemstring = gcnew String(currentMAC.c_str());
 	textBox1->Text = systemstring;
@@ -513,32 +535,19 @@ private: System::Void backgroundWorker1_DoWork_1(System::Object^  sender, System
 	
 	spoofMac::setNewMac(RANDOM_MAC);
 	
+	
 }
 
 private: System::Void backgroundWorker2_DoWork_2(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
 
-	String ^manualMAC;
-	manualMAC += textBox3->Text;
-	manualMAC += "-";
-	manualMAC += textBox4->Text;
-	manualMAC += "-";
-	manualMAC += textBox5->Text;
-	manualMAC += "-";
-	manualMAC += textBox6->Text;
-	manualMAC += "-";
-	manualMAC += textBox7->Text;
-	manualMAC += "-";
-	manualMAC += textBox8->Text;
-
-	string finalMac = msclr::interop::marshal_as<std::string>(manualMAC);
-	spoofMac::setNewMac(finalMac);
+	spoofMac::setNewMac(MANUAL_MAC);
 	
 
 }
 
 private: System::Void backgroundWorker3_DoWork_3(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
 
-
+	spoofMac::revertToOriginalMac();
 
 }
 

@@ -13,7 +13,7 @@ void spoofMac::revertToOriginalMac(){
 	LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, activeRegKeyW, 0, KEY_ALL_ACCESS, &hKey);
 
 	if (retval == ERROR_SUCCESS) {
-		printf("Success opening key.");
+		//printf("Success opening key.");
 	}
 	else {
 		printf("Error opening key.");
@@ -23,14 +23,11 @@ void spoofMac::revertToOriginalMac(){
 	retval = RegCloseKey(hKey);
 
 	string nicFriendlyName = getNicFriendlyName();
-	//cout << "\n" << NIC_FRIENDLY_NAME << endl;
 
 	string disableNic = "netsh interface set interface " + nicFriendlyName + " DISABLED";
-	cout << "/ndisableNic = " << disableNic;
 	system(disableNic.c_str());
 
 	string enableNic = "netsh interface set interface " + nicFriendlyName + " ENABLED";
-	cout << "/enableNic = " << enableNic;
 	system(enableNic.c_str());
 
 }
@@ -97,15 +94,14 @@ string spoofMac::getCurrentMAcAddress(){
 		while (pCurrAddresses) {
 
 			//check to see if network adapter is "Wi-fi"
-			//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
 			networkAdap = pCurrAddresses->FriendlyName;
 			if (pCurrAddresses->OperStatus == 1){//87 == "Wi-Fi",69 == "Ethernet"
 				if (*networkAdap == 87 || *networkAdap == 69){
 					if (pCurrAddresses->PhysicalAddressLength != 0) {
-						printf("\tPhysical address: ");
+						//printf("\tPhysical address: ");
 						for (i = 0; i < (int)pCurrAddresses->PhysicalAddressLength; i++) {
 							if (i == (pCurrAddresses->PhysicalAddressLength - 1)){
-								printf("%.2X\n", (int)pCurrAddresses->PhysicalAddress[i]);
+								//printf("%.2X\n", (int)pCurrAddresses->PhysicalAddress[i]);
 
 								//Convert int to hex
 								stringstream stream;
@@ -114,7 +110,7 @@ string spoofMac::getCurrentMAcAddress(){
 								currentMAC += stream.str();
 							}
 							else{
-								printf("%.2X-", (int)pCurrAddresses->PhysicalAddress[i]);
+								//printf("%.2X-", (int)pCurrAddresses->PhysicalAddress[i]);
 
 								//Convert int to hex
 								stringstream stream;
@@ -156,8 +152,6 @@ string spoofMac::getCurrentMAcAddress(){
 		FREE(pAddresses);
 	}
 
-
-	cout << currentMAC;
 	if (currentMAC == "")
 		currentMAC = "No NetWork Found";
 
@@ -166,10 +160,12 @@ string spoofMac::getCurrentMAcAddress(){
 
 //Function that returns a string of a random MAC addess
 string spoofMac::randomizeMAC(){
+
 	srand(time(0)); //Seeds the rand() function
 	string newMAC;
 	char secondNibble[] = { 'A', 'E', '2', '6' };
 	char newValArray[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
 	for (int i = 0; i < 6; i++){
 
 		newMAC += newValArray[rand() % 16];
@@ -191,6 +187,7 @@ string spoofMac::randomizeMAC(){
 //Function that spoofs a new MAC address
 void spoofMac::setNewMac(string finalMac){
 
+	cout << "Final MAC =" << finalMac << endl;
 	HKEY hKey;
 	wstring key = queryKey();
 
@@ -225,7 +222,6 @@ void spoofMac::setNewMac(string finalMac){
 	string nicFriendlyName = getNicFriendlyName();
 
 	string disableNic = "netsh interface set interface " + nicFriendlyName + " DISABLED";
-	cout << " disableNic = " << disableNic;
 	system(disableNic.c_str());
 
 	string enableNic = "netsh interface set interface " + nicFriendlyName + " ENABLED";
@@ -258,7 +254,6 @@ wstring spoofMac::queryKey()
 	HKEY hKey;
 	LPCWSTR dir = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}");
 	LONG checkReg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &hKey);
-	//cout << checkReg;
 
 	if (checkReg == ERROR_SUCCESS)
 	{
@@ -295,16 +290,13 @@ wstring spoofMac::queryKey()
 			if (retCode == ERROR_SUCCESS)
 			{
 
-				_tprintf(TEXT("(%d) %s\n"), i + 1, achKey);
+				//_tprintf(TEXT("(%d) %s\n"), i + 1, achKey);
 
 				wstring subKey = achKey;
 
 				wstring key = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" 
 					+ subKey);
-				wcout << key;
-				//Convert string to windows data type
-				//LPCWSTR findKey = key.c_str();
-				//cout << findKey;
+
 				//return bool
 				if (queryRegValue(subKey) == true)
 					return key;
@@ -326,7 +318,6 @@ bool spoofMac::queryRegValue(wstring subKey){
 	memset(szVersion, 0, 32);
 	wstring key = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subKey);
 
-	wcout << key << endl;
 	//Convert string to windows data type
 	LPCWSTR findKey = key.c_str();
 
@@ -334,7 +325,6 @@ bool spoofMac::queryRegValue(wstring subKey){
 	HKEY hkeyDXVer;
 	long lResult = RegOpenKeyEx(HKEY_LOCAL_MACHINE, findKey, 0, KEY_READ, &hkeyDXVer);
 
-	cout << lResult;
 	if (ERROR_SUCCESS == lResult)
 	{
 
@@ -342,18 +332,15 @@ bool spoofMac::queryRegValue(wstring subKey){
 
 		// read the version value
 		lResult = RegQueryValueExW(hkeyDXVer, type, 0, &dwType, (PBYTE)szVersion, &dwDataSize);
-		cout << lResult;
+
 		if (ERROR_SUCCESS == lResult)
 		{
-			cout << szVersion;
 			string netInfo = getNetworkInfo();
 			TCHAR netInfoW[1024];
 			_tcscpy_s(netInfoW, CA2T(netInfo.c_str()));
-			wcout << "netinfo =" << netInfoW << " netInstId = " << szVersion << endl;
 
 			//compare the NetCfgInstanceId to evaluate whether the sub key is correct
 			if (_tcscmp(netInfoW, szVersion) == 0){
-				cout << "NetCfgInstanceId = " << szVersion << endl;
 				return true;
 			}
 		}
@@ -426,7 +413,8 @@ LPCSTR spoofMac::getNetworkInfo(){
 
 		//Cycles through the Network Adapters, ouputs name, type and operational status
 		while (pCurrAddresses) {
-
+			
+			/*
 			printf("\tAdapter name: %s\n", pCurrAddresses->AdapterName);
 			printf("\tDescription: %wS\n", pCurrAddresses->Description);
 			printf("\tFriendly name: %wS\n", pCurrAddresses->FriendlyName);
@@ -436,22 +424,19 @@ LPCSTR spoofMac::getNetworkInfo(){
 				for (i = 0; i < (int)pCurrAddresses->PhysicalAddressLength;
 					i++) {
 					if (i == (pCurrAddresses->PhysicalAddressLength - 1))
-						printf("%.2X\n",
-						(int)pCurrAddresses->PhysicalAddress[i]);
+						printf("%.2X\n", (int)pCurrAddresses->PhysicalAddress[i]);
 					else
-						printf("%.2X-",
-						(int)pCurrAddresses->PhysicalAddress[i]);
+						printf("%.2X-",(int)pCurrAddresses->PhysicalAddress[i]);
 				}
 			}
 
 			//check to see if network adapter is "Wi-fi"
 			printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
-
+			*/
 			networkAdap = pCurrAddresses->FriendlyName;
 			if (pCurrAddresses->OperStatus == 1){//87 == "Wi-Fi"
 				if (*networkAdap == 87 || *networkAdap == 69){																			//69 == "Ethernet"
-					printf("\t***Success******8:  Friendly name == %wS\n", pCurrAddresses->FriendlyName);
-					cout << pCurrAddresses->AdapterName << endl;
+				
 					driverDesc = pCurrAddresses->AdapterName;
 					adapName = pCurrAddresses->AdapterName;
 					PWCHAR friendlyName = pCurrAddresses->FriendlyName;
@@ -463,9 +448,6 @@ LPCSTR spoofMac::getNetworkInfo(){
 					len = WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, 0, 0, 0, 0);
 					string NIC_FRIENDLY_NAME(len, '\0');
 					WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, &NIC_FRIENDLY_NAME[0], len, 0, 0);
-
-					cout << "NIC_FRIENDLY_NAME = " << NIC_FRIENDLY_NAME;
-					cout << "NIC_FRIENDLY_NAME Length = " << NIC_FRIENDLY_NAME.length();
 
 					return adapName;
 				}
@@ -565,31 +547,9 @@ string spoofMac::getNicFriendlyName(){
 		//Cycles through the Network Adapters, ouputs name, type and operational status
 		while (pCurrAddresses) {
 
-			printf("\tAdapter name: %s\n", pCurrAddresses->AdapterName);
-			printf("\tDescription: %wS\n", pCurrAddresses->Description);
-			printf("\tFriendly name: %wS\n", pCurrAddresses->FriendlyName);
-
-			if (pCurrAddresses->PhysicalAddressLength != 0) {
-				printf("\tPhysical address: ");
-				for (i = 0; i < (int)pCurrAddresses->PhysicalAddressLength;
-					i++) {
-					if (i == (pCurrAddresses->PhysicalAddressLength - 1))
-						printf("%.2X\n",
-						(int)pCurrAddresses->PhysicalAddress[i]);
-					else
-						printf("%.2X-",
-						(int)pCurrAddresses->PhysicalAddress[i]);
-				}
-			}
-
-			//check to see if network adapter is "Wi-fi"
-			//printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
-
 			networkAdap = pCurrAddresses->FriendlyName;
 			if (pCurrAddresses->OperStatus == 1){
 				if (*networkAdap == 87 || *networkAdap == 69){//87 == "Wi-Fi",69 == "Ethernet"
-					//printf("\t***Success******8:  Friendly name == %wS\n", pCurrAddresses->FriendlyName);
-					cout << pCurrAddresses->AdapterName << endl;
 					driverDesc = pCurrAddresses->AdapterName;
 					adapName = pCurrAddresses->AdapterName;
 					PWCHAR friendlyName = pCurrAddresses->FriendlyName;
@@ -601,9 +561,6 @@ string spoofMac::getNicFriendlyName(){
 					len = WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, 0, 0, 0, 0);
 					string nicFriendlyName(len, '\0');
 					WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, &nicFriendlyName[0], len, 0, 0);
-
-					cout << "NIC_FRIENDLY_NAME = " << nicFriendlyName;
-					cout << "NIC_FRIENDLY_NAME Length = " << nicFriendlyName.length();
 
 					return nicFriendlyName;
 				}
