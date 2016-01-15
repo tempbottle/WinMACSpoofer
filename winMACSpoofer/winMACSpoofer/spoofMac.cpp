@@ -1,5 +1,13 @@
 #include "spoofMac.h"
 
+/**
+A method which returns the computer physical address back to the original
+
+The sub registry key "NetworkAddress" which was added to the active network 
+adapter is deleted, restoring the original physical address once the active 
+adapter is disabled/enabled
+
+*/
 
 void spoofMac::revertToOriginalMac(){
 
@@ -32,7 +40,11 @@ void spoofMac::revertToOriginalMac(){
 
 }
 
-//Function that returns the current MAC Address
+/**
+A method which returns the current MAC address of the active network adapter
+
+@return A string containing the network adapter's MAC address
+*/
 string spoofMac::getCurrentMAcAddress(){
 	/* Declare and initialize variables */
 
@@ -158,10 +170,20 @@ string spoofMac::getCurrentMAcAddress(){
 	return currentMAC;
 }
 
-//Function that returns a string of a random MAC addess
+
+/**
+A method which returns a randomly generated MAC adrress
+
+Uses the rand() function seeded with system time
+The second nibble must be either 'A', 'E', '2' or '6'
+e.g. xy-xx-xx-xx-xx-xx, where y must be = ('A', 'E', '2' or '6')
+x can be represented with any hexadecimal value
+
+@return A string containing a randomized MAC adrress
+*/
 string spoofMac::randomizeMAC(){
 
-	srand(time(0)); //Seeds the rand() function
+	srand(time(0));
 	string newMAC;
 	char secondNibble[] = { 'A', 'E', '2', '6' };
 	char newValArray[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
@@ -184,10 +206,15 @@ string spoofMac::randomizeMAC(){
 	return newMAC;
 }
 
-//Function that spoofs a new MAC address
+/**
+ A method sets the active network adapter with a new MAC address
+
+ Adds the subkey "NetworkAddress" to the active network adapter's register
+
+@param A string containing the new MAC address
+*/
 void spoofMac::setNewMac(string finalMac){
 
-	cout << "Final MAC =" << finalMac << endl;
 	HKEY hKey;
 	wstring key = queryKey();
 
@@ -198,7 +225,7 @@ void spoofMac::setNewMac(string finalMac){
 	USES_CONVERSION;
 	LPCWSTR skw = key.c_str();
 	LPCWSTR keyDataW = A2W(keyData);
-	cout << skw;
+
 	LONG retval = RegOpenKeyEx(HKEY_LOCAL_MACHINE, skw, 0, KEY_ALL_ACCESS, &hKey);
 
 	if (retval == ERROR_SUCCESS) {
@@ -229,7 +256,12 @@ void spoofMac::setNewMac(string finalMac){
 
 }
 
-//Function that returns a path a registry key with the active nic
+/**
+* A method which returns the key which contains the full path to the active adapter's key
+*
+*
+*@return A wide string containing the full key of the active network adapter
+*/
 wstring spoofMac::queryKey()
 {
 
@@ -297,7 +329,6 @@ wstring spoofMac::queryKey()
 				wstring key = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" 
 					+ subKey);
 
-				//return bool
 				if (queryRegValue(subKey) == true)
 					return key;
 			};
@@ -307,15 +338,19 @@ wstring spoofMac::queryKey()
 	return netFail;
 }
 
-
-//Find the subkey where the where the active "Wi-Fi" is located
+/**
+* A method which returns a bool if the subkey passed contains the active network adapter
+*
+*
+* @return A boolean value 
+*/
 bool spoofMac::queryRegValue(wstring subKey){
 
 	//set up our variables and buffers.
 	DWORD dwType = REG_SZ;
-	TCHAR szVersion[1024];
+	TCHAR NetCfgInstanceId[1024];
 	DWORD dwDataSize = MAX_VALUE_NAME;
-	memset(szVersion, 0, 32);
+	memset(NetCfgInstanceId, 0, 32);
 	wstring key = TEXT("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\" + subKey);
 
 	//Convert string to windows data type
@@ -330,8 +365,8 @@ bool spoofMac::queryRegValue(wstring subKey){
 
 		LPCWSTR type = TEXT("NetCfgInstanceId");
 
-		// read the version value
-		lResult = RegQueryValueExW(hkeyDXVer, type, 0, &dwType, (PBYTE)szVersion, &dwDataSize);
+		// read the NetCfgInstanceId value
+		lResult = RegQueryValueExW(hkeyDXVer, type, 0, &dwType, (PBYTE)NetCfgInstanceId, &dwDataSize);
 
 		if (ERROR_SUCCESS == lResult)
 		{
@@ -340,7 +375,7 @@ bool spoofMac::queryRegValue(wstring subKey){
 			_tcscpy_s(netInfoW, CA2T(netInfo.c_str()));
 
 			//compare the NetCfgInstanceId to evaluate whether the sub key is correct
-			if (_tcscmp(netInfoW, szVersion) == 0){
+			if (_tcscmp(netInfoW, NetCfgInstanceId) == 0){
 				return true;
 			}
 		}
@@ -348,11 +383,16 @@ bool spoofMac::queryRegValue(wstring subKey){
 	return false;
 }
 
+/**
+* A method which returns the active adapter's name
+* This value os used in determining the which subkey holds the active network adapter
+* Accesses the network Information (operStatus, friendlyname, adaptername)
+*
+* @return A const char* containing the active adapter name
+*/
 
 
-//Access the network Information (operStatus, friendlyname, adaptername)
 LPCSTR spoofMac::getNetworkInfo(){
-
 
 	/* Declare and initialize variables */
 
@@ -381,7 +421,7 @@ LPCSTR spoofMac::getNetworkInfo(){
 	// Allocate a 15 KB buffer to start with.
 	outBufLen = WORKING_BUFFER_SIZE;
 
-	//Name of the active Wi-Fi adapter
+	//Name of the active network adapter
 	LPCSTR adapName = NULL;
 	do {
 
@@ -434,7 +474,7 @@ LPCSTR spoofMac::getNetworkInfo(){
 			printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
 			*/
 			networkAdap = pCurrAddresses->FriendlyName;
-			if (pCurrAddresses->OperStatus == 1){//87 == "Wi-Fi"
+			if (pCurrAddresses->OperStatus == 1){//87 == "wireless", 69 == "Ethernet"
 				if (*networkAdap == 87 || *networkAdap == 69){																			//69 == "Ethernet"
 				
 					driverDesc = pCurrAddresses->AdapterName;
@@ -446,8 +486,8 @@ LPCSTR spoofMac::getNetworkInfo(){
 					int len;
 					int slength = (int)friendlyNameW.length();
 					len = WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, 0, 0, 0, 0);
-					string NIC_FRIENDLY_NAME(len, '\0');
-					WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, &NIC_FRIENDLY_NAME[0], len, 0, 0);
+					string nicFriendlyName(len, '\0');
+					WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, &nicFriendlyName[0], len, 0, 0);
 
 					return adapName;
 				}
@@ -485,6 +525,12 @@ LPCSTR spoofMac::getNetworkInfo(){
 
 }
 
+/**
+* A method which returns the network adapter's friendly name
+*
+* 
+* @return A string containing the nic's friendly name
+*/
 string spoofMac::getNicFriendlyName(){
 
 	/* Declare and initialize variables */
@@ -555,7 +601,7 @@ string spoofMac::getNicFriendlyName(){
 					PWCHAR friendlyName = pCurrAddresses->FriendlyName;
 					wstring friendlyNameW(friendlyName);
 
-					//Convert wstring to string UTF-16 to UTF-8
+					//Convert wstring to string, UTF-16 to UTF-8
 					int len;
 					int slength = (int)friendlyNameW.length();
 					len = WideCharToMultiByte(CP_ACP, 0, friendlyNameW.c_str(), slength, 0, 0, 0, 0);

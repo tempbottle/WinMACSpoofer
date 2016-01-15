@@ -1,7 +1,11 @@
 #include "spoofHost.h"
 
 
-	//Function that returns the current Host Name
+	/**
+	A method that returns the host name of the computer
+
+	@return A wide string set to the current host name
+	*/
 	wstring spoofHost::getHostName(){
 
 		wstring hostName;
@@ -39,6 +43,12 @@
 
 	}
 
+	/**
+	A method which changes the computer's host name
+
+	@param  A string set to the user's choice of host name
+
+	*/
 	void spoofHost::setNewHostName(string changeHostName){
 
 		HKEY hKey;

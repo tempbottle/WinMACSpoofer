@@ -486,7 +486,7 @@ private: System::Void button2_Click(System::Object^  sender, System::EventArgs^ 
 		
 		for (int i = 0; i < 10; i++){
 			progressBar1->Value += 10;
-			Sleep(800);
+			Sleep(1000);
 		}
 		
 		Sleep(1000);
@@ -535,14 +535,12 @@ private: System::Void backgroundWorker1_DoWork_1(System::Object^  sender, System
 	
 	spoofMac::setNewMac(RANDOM_MAC);
 	
-	
 }
 
 private: System::Void backgroundWorker2_DoWork_2(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
 
 	spoofMac::setNewMac(MANUAL_MAC);
 	
-
 }
 
 private: System::Void backgroundWorker3_DoWork_3(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
