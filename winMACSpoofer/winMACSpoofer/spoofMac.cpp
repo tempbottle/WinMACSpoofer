@@ -527,8 +527,9 @@ LPCSTR spoofMac::getNetworkInfo(){
 
 /**
 * A method which returns the network adapter's friendly name
+* The friendly name is passes as an argument to a powershell command which will
+* disable/enable the active network adapter allwowing the spoofed MAC address to take effect
 *
-* 
 * @return A string containing the nic's friendly name
 */
 string spoofMac::getNicFriendlyName(){
