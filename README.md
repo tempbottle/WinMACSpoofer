@@ -3,6 +3,7 @@ Windows application for spoofing the MAC address and host name
 
 #Usage
 **The program must be run in "administrator mode" for the functions to work properly**
+
 1. Set a new Random MAC address
   - Press the randomize button to generate a random MAC address
   - Click the random radio button and hit "Set New Mac" to reset your MAC address to this new address
