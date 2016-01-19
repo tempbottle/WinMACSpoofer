@@ -12,7 +12,7 @@ Windows application for spoofing the MAC address and host name
   - To use a specially selected MAC address enter the desired values in the text fields
   - **CAUTION** The second nibble can only be set with a value of ('A', 'E', '2' or '6')
   - e.g. xy-xx-xx-xx-xx-xx, y represents the second nibble and must be represented by ('A', 'E', '2' or '6')
-  - x cab be represented by any hexadecimal value
+  - x can be represented by any hexadecimal value
   
 3. Reset the MAC address
   - To revert the MAC adrress back to the network adapter's original values press the "reset" button
